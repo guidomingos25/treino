@@ -1,121 +1,79 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Treino</title>
-    <style>
-        body{
-            background-color: rgb(0, 0, 0);
-            display: flex;
-            flex-wrap: wrap;
-        }
-        h1{
-            color: rgb(255, 255, 255);
-        }
-        .a{
-            border-radius: 20px;
-            background-color: rgb(255, 0, 0);
-            width: 300px;
-        }
-
-        .b{
-            border-radius: 20px;
-            background-color: rgb(255, 145, 0);
-            width: 300px;
-        }
-
-        .c{
-            border-radius: 20px;
-            background-color: rgb(0, 34, 255);
-            width: 300px;
-        }
-        
-        div{
-            padding: 10px;
-        }
-
-        p{
-            font-weight: bold;
-            color: white;
-        }
-
-        div{
-            background-color: rgb(60, 59, 59);
-            border-radius: 20px;
-            margin: 10px;
-        }
-
-        .ha{
-            font-size: 30px;
-            color: rgb(255, 0, 0);
-            border-bottom: 2px solid black;
-        }
-
-        .hb{
-            font-size: 30px;
-            color: rgb(255, 145, 0);
-            border-bottom: 2px solid black;
-        }
-
-        .hc{
-            font-size: 30px;
-            color: rgb(0, 34, 255);
-            border-bottom: 2px solid black;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Tabela da Planilha Google</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9fafb;
+      margin: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+      font-size: 14px;
+    }
+    th {
+      background-color: #4CAF50;
+      color: white;
+      position: sticky;
+      top: 0;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    #loading {
+      text-align: center;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
-    <div class="a">
-        <h1>A) Peito e Triceps</h1>
-        <div>
-            <h2 class="ha">Peito</h2>
-            <p>Dombbell press inclinado (carga)</p>
-            <p>Dumbbell press reto (carga)</p>
-            <p>Crucifixo máquina (contração)</p>
-            <p>Crossover (contração) / Pullover (contração)</p>
-        </div>
-        <div>
-            <h2 class="ha">Triceps</h2>
-            <p>Pulley triceps (carga)</p>
-            <p>Triceps testa na polia alta (contração)</p>
-            <p>Francês (alongamento)</p>
-            <p>Triceps banco (contração)</p>
-        </div>
-    </div>
-    <div class="b">
-        <h1>B) Costa e Biceps</h1>
-        <div>
-            <h2 class="hb">Costa</h2>
-            <p>Pulley frente com barra (carga)</p>
-            <p>Remada baixa (alongamento)</p>
-            <p>Pulley frente fechado com triângulo (carga)</p>
-            <p>Puxada vertical alta (contração)</p>
-        </div>
-        <div>
-            <h2 class="hb">Biceps</h2>
-            <p>Rosca direta (carga)</p>
-            <p>Rosca scott (contração)</p>
-            <p>Rosca inclinada (alongamento)</p>
-            <p>Rosca inversa no pulley (carga)</p>
-        </div>
-    </div>
-    <div class="c">
-        <h1>C) Ombro e Perna</h1>
-        <div>
-            <h2 class="hc">Ombro</h2>
-            <p>Desenvolvimento (carga)</p>
-            <p>Elevação lateral (contração)</p>
-            <p>Elevação frontal alternada (contração)</p>
-            <p>Crucifixo inverso (contração)</p>
-        </div>
-        <div>
-            <h2 class="hc">Perna</h2>
-            <p>Cadeira extensora</p>
-            <p>Leg press</p>
-            <p>Cadeira flexora</p>
-            <p>Panturrilha</p>
-        </div>
-    </div>
+  <h1>Dados da Planilha Google</h1>
+  <div id="loading">Carregando dados...</div>
+  <table id="tabela" style="display:none;">
+    <thead id="cabecalho"></thead>
+    <tbody id="corpo"></tbody>
+  </table>
+
+  <script>
+    const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQkREcLQFJhAsxEq3WRVxHtYw46zSe3sDVJcQWOreQzFs6-u6PWF-cI8ndRTkQUFXfurUkkog0-NrZq/pub?output=csv";
+
+    fetch(url)
+      .then(res => res.text())
+      .then(csv => {
+        const linhas = csv.split("\n").map(l => l.split(","));
+        const cabecalho = linhas[0];
+        const corpo = linhas.slice(1);
+
+        // Montar cabeçalho
+        document.getElementById("cabecalho").innerHTML = "<tr>" + 
+          cabecalho.map(col => `<th>${col.trim()}</th>`).join("") + 
+          "</tr>";
+
+        // Montar corpo
+        document.getElementById("corpo").innerHTML = corpo.map(linha =>
+          "<tr>" + linha.map(c => `<td>${c.trim()}</td>`).join("") + "</tr>"
+        ).join("");
+
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("tabela").style.display = "table";
+      })
+      .catch(err => {
+        document.getElementById("loading").innerText = "Erro ao carregar planilha.";
+        console.error(err);
+      });
+  </script>
 </body>
 </html>
