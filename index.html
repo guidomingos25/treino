@@ -60,13 +60,13 @@
     <label>Dia da Semana:</label>
     <select id="filtroDia">
       <option value="">Todos</option>
-      <option value="SEG">Segunda</option>
-      <option value="TER">Terça</option>
-      <option value="QUA">Quarta</option>
-      <option value="QUI">Quinta</option>
-      <option value="SEX">Sexta</option>
-      <option value="SAB">Sábado</option>
-      <option value="DOM">Domingo</option>
+      <option value="SEG">Segunda (SEG)</option>
+      <option value="TER">Terça (TER)</option>
+      <option value="QUA">Quarta (QUA)</option>
+      <option value="QUI">Quinta (QUI)</option>
+      <option value="SEX">Sexta (SEX)</option>
+      <option value="SAB">Sábado (SAB)</option>
+      <option value="DOM">Domingo (DOM)</option>
     </select>
   </div>
 
@@ -82,12 +82,43 @@
     let dados = [];
     let cabecalho = [];
 
+    // Map para converter dia abreviado em número (caso a coluna contenha números)
+    const diaParaNumero = {
+      'SEG': 1,
+      'TER': 2,
+      'QUA': 3,
+      'QUI': 4,
+      'SEX': 5,
+      'SAB': 6,
+      'DOM': 7
+    };
+
+    // Map de formas escritas aceitas no campo "DIA DA SEMANA"
+    const formasDia = {
+      'SEG': ['SEG', 'SEGUNDA', 'SEGUNDA-FEIRA', 'SEGUNDA FEIRA'],
+      'TER': ['TER', 'TERCA', 'TERÇA', 'TERÇA-FEIRA', 'TERCA-FEIRA', 'TERCA FEIRA'],
+      'QUA': ['QUA', 'QUARTA', 'QUARTA-FEIRA', 'QUARTA FEIRA'],
+      'QUI': ['QUI', 'QUINTA', 'QUINTA-FEIRA', 'QUINTA FEIRA'],
+      'SEX': ['SEX', 'SEXTA', 'SEXTA-FEIRA', 'SEXTA FEIRA'],
+      'SAB': ['SAB', 'SÁBADO', 'SABADO'],
+      'DOM': ['DOM', 'DOMINGO']
+    };
+
     fetch(url)
       .then(res => res.text())
       .then(csv => {
         const linhas = csv.split("\n").map(l => l.split(","));
-        cabecalho = linhas[0].map(c => c.trim());
-        dados = linhas.slice(1).map(l => l.map(c => c.trim()));
+        // proteger contra linhas vazias
+        const nonEmpty = linhas.filter(r => r.some(c => c && c.trim() !== ""));
+        if (nonEmpty.length === 0) throw new Error("CSV vazio");
+
+        cabecalho = nonEmpty[0].map(c => c.trim());
+        dados = nonEmpty.slice(1).map(l => {
+          // garantir que cada linha tenha tamanho igual ao cabeçalho
+          const row = l.map(c => c.trim());
+          while (row.length < cabecalho.length) row.push("");
+          return row;
+        });
 
         montarCabecalho();
         montarOpcoesCliente();
@@ -107,9 +138,9 @@
     }
 
     function montarOpcoesCliente() {
-      const idxCliente = cabecalho.indexOf("CLIENTE");
+      const idxCliente = cabecalho.findIndex(h => h.toUpperCase() === "CLIENTE");
       if (idxCliente === -1) return;
-      const clientes = [...new Set(dados.map(l => l[idxCliente]).filter(c => c))];
+      const clientes = [...new Set(dados.map(l => l[idxCliente]).filter(c => c))].sort();
       const select = document.getElementById("filtroCliente");
       clientes.forEach(c => {
         const opt = document.createElement("option");
@@ -121,21 +152,57 @@
 
     function atualizarTabela() {
       const cliente = document.getElementById("filtroCliente").value;
-      const dia = document.getElementById("filtroDia").value;
+      const dia = document.getElementById("filtroDia").value; // ex: "SEG"
 
       let filtrados = [...dados];
 
-      // Filtro por Cliente
+      // Filtro por Cliente (se selecionado)
       if (cliente) {
-        const idxCliente = cabecalho.indexOf("CLIENTE");
-        filtrados = filtrados.filter(l => l[idxCliente] === cliente);
+        const idxCliente = cabecalho.findIndex(h => h.toUpperCase() === "CLIENTE");
+        if (idxCliente !== -1) {
+          filtrados = filtrados.filter(l => (l[idxCliente] || "") === cliente);
+        }
       }
 
-      // Filtro por Dia da Semana
+      // Filtro por Dia da Semana (se selecionado)
       if (dia) {
-        const idxDia = cabecalho.indexOf(dia);
-        if (idxDia !== -1) {
-          filtrados = filtrados.filter(l => l[idxDia] === "1" || l[idxDia].toUpperCase() === "SIM" || l[idxDia] === "X");
+        // tenta encontrar coluna "DIA DA SEMANA"
+        const idxColDiaSemana = cabecalho.findIndex(h => h.toUpperCase().replace(/\s+/g,' ') === "DIA DA SEMANA");
+        if (idxColDiaSemana !== -1) {
+          // filtrar usando o conteúdo da coluna "DIA DA SEMANA"
+          filtrados = filtrados.filter(l => {
+            const val = ((l[idxColDiaSemana] || "") + "").toUpperCase().trim();
+            if (!val) return false;
+
+            // se for número (ex: "1","2"), compara com o map
+            if (/^\d+$/.test(val)) {
+              const num = Number(val);
+              return num === diaParaNumero[dia];
+            }
+
+            // compara se a string contém a abreviatura (ex: "SEG")
+            if (val.includes(dia)) return true;
+
+            // compara contra formas escritas (ex: "SEGUNDA", "TERÇA")
+            const formas = formasDia[dia] || [];
+            for (const f of formas) {
+              if (val.includes(f)) return true;
+            }
+
+            return false;
+          });
+        } else {
+          // fallback: procura coluna com nome do dia (ex: "SEG", "TER")
+          const idxColDia = cabecalho.findIndex(h => h.toUpperCase() === dia);
+          if (idxColDia !== -1) {
+            filtrados = filtrados.filter(l => {
+              const v = ((l[idxColDia] || "") + "").toUpperCase().trim();
+              return v === "1" || v === "SIM" || v === "X";
+            });
+          } else {
+            // Nenhuma coluna encontrada: não filtra (ou poderia filtrar como vazio). Aqui,
+            // vamos manter tudo (poderíamos também limpar a tabela, mas mantenho comportamento seguro).
+          }
         }
       }
 
