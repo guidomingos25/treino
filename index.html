@@ -34,7 +34,7 @@
       font-size: 13px;
     }
     th {
-      background-color: #ff9800; /* alterado de verde para laranja */
+      background-color: #4CAF50; /* voltou para verde */
       color: white;
       position: sticky;
       top: 0;
@@ -45,19 +45,19 @@
       background-color: #f2f2f2;
     }
 
-    /* 🔶 Input da primeira coluna com padding e largura maior */
+    /* 🔹 Input da primeira coluna ajustado */
     input[type="text"] {
-      width: 97%;
-      padding: 6px 10px 6px 6px; /* padding-right de 10px */
+      width: 90%; /* levemente menor */
+      padding: 5px 6px 5px 5px; /* padding-right reduzido */
       font-size: 13px;
       border: 1px solid #ccc;
       border-radius: 4px;
       box-sizing: border-box;
     }
 
-    /* 🔶 Primeira coluna ligeiramente mais larga */
+    /* 🔹 Primeira coluna um pouco mais estreita */
     td:first-child, th:first-child {
-      width: 230px;
+      width: 180px;
     }
 
     #loading {
@@ -170,7 +170,7 @@
       linhaCab.appendChild(thAnot);
 
       cabecalho.forEach((col, i) => {
-        if (i === idxDiaSemana) return; // oculta coluna
+        if (i === idxDiaSemana) return;
         const th = document.createElement("th");
         th.textContent = col;
         th.addEventListener("click", () => ordenarPor(i));
@@ -202,7 +202,6 @@
         ordem.crescente = true;
       }
 
-      const idxDiaSemana = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
       dados.sort((a, b) => {
         const valA = (a[idx] || "").toUpperCase();
         const valB = (b[idx] || "").toUpperCase();
