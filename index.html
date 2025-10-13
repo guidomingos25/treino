@@ -34,7 +34,7 @@
       font-size: 13px;
     }
     th {
-      background-color: #4CAF50; /* voltou para verde */
+      background-color: #4CAF50;
       color: white;
       position: sticky;
       top: 0;
@@ -45,19 +45,19 @@
       background-color: #f2f2f2;
     }
 
-    /* 🔹 Input da primeira coluna ajustado */
+    /* Input da primeira coluna ajustado */
     input[type="text"] {
-      width: 90%; /* levemente menor */
-      padding: 5px 6px 5px 5px; /* padding-right reduzido */
+      width: 90%;
+      padding: 5px 5px 5px 5px; /* padding-right levemente menor */
       font-size: 13px;
       border: 1px solid #ccc;
       border-radius: 4px;
       box-sizing: border-box;
     }
 
-    /* 🔹 Primeira coluna um pouco mais estreita */
+    /* Primeira coluna levemente menor para alinhar ao input */
     td:first-child, th:first-child {
-      width: 180px;
+      width: 150px;
     }
 
     #loading {
@@ -259,7 +259,7 @@
           const tds = linha.map((c, j) => (j === idxOcultar ? null : `<td>${c}</td>`))
                            .filter(Boolean)
                            .join("");
-          const input = `<td><input type="text" id="anotacao_${i}" placeholder="Digite suas anotações aqui..."></td>`;
+          const input = `<td><input type="text" id="anotacao_${i}"></td>`; // placeholder removido
           return `<tr>${input}${tds}</tr>`;
         })
         .join("");
