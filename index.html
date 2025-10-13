@@ -53,6 +53,25 @@
       text-align: center;
       font-size: 18px;
     }
+    /* Campo de anotações gerais */
+    #anotacoesGerais {
+      width: 100%;
+      height: 120px;
+      margin-top: 30px;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+    label.anotacoes-gerais-label {
+      display: block;
+      font-weight: bold;
+      margin-top: 30px;
+      margin-bottom: 5px;
+      font-size: 15px;
+    }
   </style>
 </head>
 <body>
@@ -82,6 +101,10 @@
     <thead id="cabecalho"></thead>
     <tbody id="corpo"></tbody>
   </table>
+
+  <!-- Campo grande de anotações gerais -->
+  <label for="anotacoesGerais" class="anotacoes-gerais-label">Anotações Gerais</label>
+  <textarea id="anotacoesGerais" placeholder="Digite aqui suas observações gerais..."></textarea>
 
   <script>
     const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQkREcLQFJhAsxEq3WRVxHtYw46zSe3sDVJcQWOreQzFs6-u6PWF-cI8ndRTkQUFXfurUkkog0-NrZq/pub?output=csv";
@@ -130,7 +153,6 @@
         .map((col, i) => (i === idxDiaSemana ? null : `<th>${col}</th>`))
         .filter(Boolean)
         .join("");
-      // adiciona coluna de anotações no início
       document.getElementById("cabecalho").innerHTML = `<tr><th>Anotações</th>${cols}</tr>`;
     }
 
