@@ -26,14 +26,12 @@
       width: 100%;
       background: white;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      table-layout: fixed;
     }
     th, td {
       border: 1px solid #ddd;
       padding: 8px;
       text-align: left;
       font-size: 13px;
-      word-wrap: break-word;
     }
     th {
       background-color: #4CAF50;
@@ -44,17 +42,12 @@
     tr:nth-child(even) {
       background-color: #f2f2f2;
     }
-    /* Primeira coluna mais larga */
-    th:first-child, td:first-child {
-      width: 30%;
-    }
     input[type="text"] {
       width: 98%;
-      padding: 8px;
+      padding: 4px;
       font-size: 13px;
-      border: 1px solid #bbb;
+      border: 1px solid #ccc;
       border-radius: 4px;
-      height: 28px;
     }
     #loading {
       text-align: center;
@@ -137,7 +130,8 @@
         .map((col, i) => (i === idxDiaSemana ? null : `<th>${col}</th>`))
         .filter(Boolean)
         .join("");
-      document.getElementById("cabecalho").innerHTML = `<tr><th>Anotações</th>${cols}</tr>`;
+      // adiciona nova coluna de anotações
+      document.getElementById("cabecalho").innerHTML = `<tr>${cols}<th>Anotações</th></tr>`;
     }
 
     function montarOpcoesCliente() {
@@ -192,8 +186,9 @@
           const tds = linha.map((c, j) => (j === idxOcultar ? null : `<td>${c}</td>`))
                            .filter(Boolean)
                            .join("");
-          const input = `<td><input type="text" id="anotacao_${i}" placeholder="Digite suas anotações aqui..."></td>`;
-          return `<tr>${input}${tds}</tr>`;
+          // campo de anotações
+          const input = `<td><input type="text" id="anotacao_${i}" placeholder="Digite aqui..."></td>`;
+          return `<tr>${tds}${input}</tr>`;
         })
         .join("");
     }
@@ -203,3 +198,4 @@
   </script>
 </body>
 </html>
+
