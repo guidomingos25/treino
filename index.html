@@ -12,6 +12,15 @@
     h1 {
       text-align: center;
     }
+    .filtros {
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    select {
+      padding: 6px;
+      font-size: 14px;
+      margin: 0 5px;
+    }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -22,7 +31,7 @@
       border: 1px solid #ddd;
       padding: 8px;
       text-align: left;
-      font-size: 14px;
+      font-size: 13px;
     }
     th {
       background-color: #4CAF50;
@@ -41,6 +50,26 @@
 </head>
 <body>
   <h1>Dados da Planilha Google</h1>
+
+  <div class="filtros">
+    <label>Cliente:</label>
+    <select id="filtroCliente">
+      <option value="">Todos</option>
+    </select>
+
+    <label>Dia da Semana:</label>
+    <select id="filtroDia">
+      <option value="">Todos</option>
+      <option value="SEG">Segunda</option>
+      <option value="TER">Terça</option>
+      <option value="QUA">Quarta</option>
+      <option value="QUI">Quinta</option>
+      <option value="SEX">Sexta</option>
+      <option value="SAB">Sábado</option>
+      <option value="DOM">Domingo</option>
+    </select>
+  </div>
+
   <div id="loading">Carregando dados...</div>
   <table id="tabela" style="display:none;">
     <thead id="cabecalho"></thead>
@@ -50,22 +79,19 @@
   <script>
     const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQkREcLQFJhAsxEq3WRVxHtYw46zSe3sDVJcQWOreQzFs6-u6PWF-cI8ndRTkQUFXfurUkkog0-NrZq/pub?output=csv";
 
+    let dados = [];
+    let cabecalho = [];
+
     fetch(url)
       .then(res => res.text())
       .then(csv => {
         const linhas = csv.split("\n").map(l => l.split(","));
-        const cabecalho = linhas[0];
-        const corpo = linhas.slice(1);
+        cabecalho = linhas[0].map(c => c.trim());
+        dados = linhas.slice(1).map(l => l.map(c => c.trim()));
 
-        // Montar cabeçalho
-        document.getElementById("cabecalho").innerHTML = "<tr>" + 
-          cabecalho.map(col => `<th>${col.trim()}</th>`).join("") + 
-          "</tr>";
-
-        // Montar corpo
-        document.getElementById("corpo").innerHTML = corpo.map(linha =>
-          "<tr>" + linha.map(c => `<td>${c.trim()}</td>`).join("") + "</tr>"
-        ).join("");
+        montarCabecalho();
+        montarOpcoesCliente();
+        atualizarTabela();
 
         document.getElementById("loading").style.display = "none";
         document.getElementById("tabela").style.display = "table";
@@ -74,6 +100,52 @@
         document.getElementById("loading").innerText = "Erro ao carregar planilha.";
         console.error(err);
       });
+
+    function montarCabecalho() {
+      document.getElementById("cabecalho").innerHTML =
+        "<tr>" + cabecalho.map(col => `<th>${col}</th>`).join("") + "</tr>";
+    }
+
+    function montarOpcoesCliente() {
+      const idxCliente = cabecalho.indexOf("CLIENTE");
+      if (idxCliente === -1) return;
+      const clientes = [...new Set(dados.map(l => l[idxCliente]).filter(c => c))];
+      const select = document.getElementById("filtroCliente");
+      clientes.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        select.appendChild(opt);
+      });
+    }
+
+    function atualizarTabela() {
+      const cliente = document.getElementById("filtroCliente").value;
+      const dia = document.getElementById("filtroDia").value;
+
+      let filtrados = [...dados];
+
+      // Filtro por Cliente
+      if (cliente) {
+        const idxCliente = cabecalho.indexOf("CLIENTE");
+        filtrados = filtrados.filter(l => l[idxCliente] === cliente);
+      }
+
+      // Filtro por Dia da Semana
+      if (dia) {
+        const idxDia = cabecalho.indexOf(dia);
+        if (idxDia !== -1) {
+          filtrados = filtrados.filter(l => l[idxDia] === "1" || l[idxDia].toUpperCase() === "SIM" || l[idxDia] === "X");
+        }
+      }
+
+      document.getElementById("corpo").innerHTML = filtrados.map(linha =>
+        "<tr>" + linha.map(c => `<td>${c}</td>`).join("") + "</tr>"
+      ).join("");
+    }
+
+    document.getElementById("filtroCliente").addEventListener("change", atualizarTabela);
+    document.getElementById("filtroDia").addEventListener("change", atualizarTabela);
   </script>
 </body>
 </html>
