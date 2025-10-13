@@ -34,7 +34,7 @@
       font-size: 13px;
     }
     th {
-      background-color: #4CAF50;
+      background-color: #ff9800; /* alterado de verde para laranja */
       color: white;
       position: sticky;
       top: 0;
@@ -44,13 +44,22 @@
     tr:nth-child(even) {
       background-color: #f2f2f2;
     }
+
+    /* 🔶 Input da primeira coluna com padding e largura maior */
     input[type="text"] {
-      width: 95%;
-      padding: 6px;
+      width: 97%;
+      padding: 6px 10px 6px 6px; /* padding-right de 10px */
       font-size: 13px;
       border: 1px solid #ccc;
       border-radius: 4px;
+      box-sizing: border-box;
     }
+
+    /* 🔶 Primeira coluna ligeiramente mais larga */
+    td:first-child, th:first-child {
+      width: 230px;
+    }
+
     #loading {
       text-align: center;
       font-size: 18px;
@@ -186,7 +195,6 @@
     }
 
     function ordenarPor(idx) {
-      // Alterna direção
       if (ordem.coluna === idx) {
         ordem.crescente = !ordem.crescente;
       } else {
@@ -204,9 +212,8 @@
         return ordem.crescente ? valA.localeCompare(valB) : valB.localeCompare(valA);
       });
 
-      // Atualiza o indicador de ordenação
       const ths = document.querySelectorAll("#cabecalho th");
-      ths.forEach(th => th.innerHTML = th.textContent); // limpa
+      ths.forEach(th => th.innerHTML = th.textContent);
       if (idx + 1 < ths.length) {
         const seta = ordem.crescente ? "↑" : "↓";
         ths[idx + 1].innerHTML = `${cabecalho[idx]} <span class="ordenacao">${seta}</span>`;
@@ -264,4 +271,3 @@
   </script>
 </body>
 </html>
-
