@@ -42,6 +42,13 @@
     tr:nth-child(even) {
       background-color: #f2f2f2;
     }
+    input[type="text"] {
+      width: 98%;
+      padding: 4px;
+      font-size: 13px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
     #loading {
       text-align: center;
       font-size: 18px;
@@ -123,7 +130,8 @@
         .map((col, i) => (i === idxDiaSemana ? null : `<th>${col}</th>`))
         .filter(Boolean)
         .join("");
-      document.getElementById("cabecalho").innerHTML = `<tr>${cols}</tr>`;
+      // adiciona nova coluna de anotações
+      document.getElementById("cabecalho").innerHTML = `<tr>${cols}<th>Anotações</th></tr>`;
     }
 
     function montarOpcoesCliente() {
@@ -145,23 +153,19 @@
 
       let filtrados = [...dados];
 
-      // Filtro por Cliente
       if (cliente) {
         const idxCliente = cabecalho.findIndex(h => h.toUpperCase() === "CLIENTE");
         if (idxCliente !== -1) filtrados = filtrados.filter(l => (l[idxCliente] || "") === cliente);
       }
 
-      // Filtro por Dia da Semana
       if (dia) {
         const idxDiaSemana = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
         if (idxDiaSemana !== -1) {
           filtrados = filtrados.filter(l => {
             const val = (l[idxDiaSemana] || "").toUpperCase().trim();
             if (!val) return false;
-
             if (/^\d+$/.test(val)) return Number(val) === diaParaNumero[dia];
             if (val.includes(dia)) return true;
-
             const formas = formasDia[dia] || [];
             return formas.some(f => val.includes(f));
           });
@@ -176,14 +180,15 @@
         }
       }
 
-      // Oculta coluna "DIA DA SEMANA" na renderização
       const idxOcultar = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
       document.getElementById("corpo").innerHTML = filtrados
-        .map(linha => {
-          const tds = linha.map((c, i) => (i === idxOcultar ? null : `<td>${c}</td>`))
+        .map((linha, i) => {
+          const tds = linha.map((c, j) => (j === idxOcultar ? null : `<td>${c}</td>`))
                            .filter(Boolean)
                            .join("");
-          return `<tr>${tds}</tr>`;
+          // campo de anotações
+          const input = `<td><input type="text" id="anotacao_${i}" placeholder="Digite aqui..."></td>`;
+          return `<tr>${tds}${input}</tr>`;
         })
         .join("");
     }
