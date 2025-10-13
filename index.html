@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Tabela da Planilha Google</title>
+  <title>Tabela de Almoxarifado</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,69 +11,142 @@
     }
     h1 {
       text-align: center;
+      color: #333;
+    }
+    .filtros {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    select {
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
     table {
-      border-collapse: collapse;
       width: 100%;
+      border-collapse: collapse;
       background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     th, td {
       border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-      font-size: 14px;
+      padding: 6px 8px;
+      text-align: center;
+      font-size: 13px;
     }
     th {
-      background-color: #4CAF50;
-      color: white;
-      position: sticky;
-      top: 0;
+      background: #f1f1f1;
     }
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
-    #loading {
-      text-align: center;
-      font-size: 18px;
+    tr:hover {
+      background-color: #f9f9f9;
     }
   </style>
 </head>
 <body>
-  <h1>Dados da Planilha Google</h1>
-  <div id="loading">Carregando dados...</div>
-  <table id="tabela" style="display:none;">
-    <thead id="cabecalho"></thead>
+  <h1>Tabela de Almoxarifado</h1>
+
+  <div class="filtros">
+    <div>
+      <label for="clienteFiltro">Cliente:</label>
+      <select id="clienteFiltro">
+        <option value="">Todos</option>
+      </select>
+    </div>
+    <div>
+      <label for="diaFiltro">Dia da Semana:</label>
+      <select id="diaFiltro">
+        <option value="">Todos</option>
+        <option value="SEG">Segunda</option>
+        <option value="TER">Terça</option>
+        <option value="QUA">Quarta</option>
+        <option value="QUI">Quinta</option>
+        <option value="SEX">Sexta</option>
+        <option value="SAB">Sábado</option>
+        <option value="DOM">Domingo</option>
+      </select>
+    </div>
+  </div>
+
+  <table id="tabela">
+    <thead>
+      <tr id="cabecalho"></tr>
+    </thead>
     <tbody id="corpo"></tbody>
   </table>
 
   <script>
-    const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQkREcLQFJhAsxEq3WRVxHtYw46zSe3sDVJcQWOreQzFs6-u6PWF-cI8ndRTkQUFXfurUkkog0-NrZq/pub?output=csv";
+    // 🔹 URL pública de sua planilha exportada como JSON (ajuste este link)
+    const PLANILHA_URL = "dados.json"; // substitua pelo seu link real
 
-    fetch(url)
-      .then(res => res.text())
-      .then(csv => {
-        const linhas = csv.split("\n").map(l => l.split(","));
-        const cabecalho = linhas[0];
-        const corpo = linhas.slice(1);
+    // 🔹 Colunas que queremos mostrar
+    const colunasDesejadas = [
+      "ALMOX DESTINO", "CLIENTE", "PRAÇA ZERO", "OBS",
+      "SEG", "TER", "QUA", "QUI", "SEX", "SAB", "DOM",
+      "SEG", "TER", "QUA", "QUI", "SEX", "SAB", "DOM"
+    ];
 
-        // Montar cabeçalho
-        document.getElementById("cabecalho").innerHTML = "<tr>" + 
-          cabecalho.map(col => `<th>${col.trim()}</th>`).join("") + 
-          "</tr>";
+    async function carregarDados() {
+      const resposta = await fetch(PLANILHA_URL);
+      const dados = await resposta.json();
 
-        // Montar corpo
-        document.getElementById("corpo").innerHTML = corpo.map(linha =>
-          "<tr>" + linha.map(c => `<td>${c.trim()}</td>`).join("") + "</tr>"
-        ).join("");
-
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("tabela").style.display = "table";
-      })
-      .catch(err => {
-        document.getElementById("loading").innerText = "Erro ao carregar planilha.";
-        console.error(err);
+      // Preencher filtro de cliente
+      const clientes = [...new Set(dados.map(linha => linha["CLIENTE"]))].sort();
+      const clienteFiltro = document.getElementById("clienteFiltro");
+      clientes.forEach(cliente => {
+        const opt = document.createElement("option");
+        opt.value = cliente;
+        opt.textContent = cliente;
+        clienteFiltro.appendChild(opt);
       });
+
+      // Renderiza a tabela
+      renderizarTabela(dados);
+
+      // Filtros
+      clienteFiltro.addEventListener("change", () => aplicarFiltros(dados));
+      document.getElementById("diaFiltro").addEventListener("change", () => aplicarFiltros(dados));
+    }
+
+    function aplicarFiltros(dados) {
+      const clienteSel = document.getElementById("clienteFiltro").value;
+      const diaSel = document.getElementById("diaFiltro").value;
+
+      const filtrados = dados.filter(linha => {
+        const matchCliente = clienteSel === "" || linha["CLIENTE"] === clienteSel;
+        const matchDia = diaSel === "" || linha["DIA DA SEMANA"]?.toUpperCase() === diaSel;
+        return matchCliente && matchDia;
+      });
+
+      renderizarTabela(filtrados);
+    }
+
+    function renderizarTabela(dados) {
+      const cabecalho = document.getElementById("cabecalho");
+      const corpo = document.getElementById("corpo");
+      cabecalho.innerHTML = "";
+      corpo.innerHTML = "";
+
+      // Cabeçalho
+      colunasDesejadas.forEach(coluna => {
+        const th = document.createElement("th");
+        th.textContent = coluna;
+        cabecalho.appendChild(th);
+      });
+
+      // Linhas
+      dados.forEach(linha => {
+        const tr = document.createElement("tr");
+        colunasDesejadas.forEach(coluna => {
+          const td = document.createElement("td");
+          td.textContent = linha[coluna] ?? "";
+          tr.appendChild(td);
+        });
+        corpo.appendChild(tr);
+      });
+    }
+
+    carregarDados();
   </script>
 </body>
 </html>
