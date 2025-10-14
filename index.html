@@ -1,272 +1,52 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>Programação</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9fafb;
-      margin: 20px;
-    }
-    h1 {
-      text-align: center;
-    }
-    .filtros {
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    select {
-      padding: 6px;
-      font-size: 14px;
-      margin: 0 5px;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 5px;
-      text-align: center;
-      font-size: 13px;
-    }
-    th {
-      background-color: #4CAF50;
-      color: white;
-      position: sticky;
-      top: 0;
-      cursor: pointer;
-      user-select: none;
-    }
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
+function atualizarTabela() {
+  const cliente = document.getElementById("filtroCliente").value;
+  const dia = document.getElementById("filtroDia").value;
+  let filtrados = [...dados];
 
-    /* Input da primeira coluna ajustado */
-    input[type="text"] {
-      width: 90%;
-      padding: 5px 5px 5px 5px; /* padding-right levemente menor */
-      font-size: 13px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
+  if (cliente) {
+    const idxCliente = cabecalho.findIndex(h => h.toUpperCase() === "CLIENTE");
+    if (idxCliente !== -1) filtrados = filtrados.filter(l => (l[idxCliente] || "") === cliente);
+  }
 
-    /* Primeira coluna levemente menor para alinhar ao input */
-    td:first-child, th:first-child {
-      width: 150px;
-    }
-
-    #loading {
-      text-align: center;
-      font-size: 18px;
-    }
-    #anotacoesGerais {
-      width: 100%;
-      height: 120px;
-      margin-top: 30px;
-      padding: 10px;
-      font-size: 14px;
-      border: 1px solid #bbb;
-      border-radius: 6px;
-      box-sizing: border-box;
-      resize: vertical;
-    }
-    label.anotacoes-gerais-label {
-      display: block;
-      font-weight: bold;
-      margin-top: 30px;
-      margin-bottom: 5px;
-      font-size: 15px;
-    }
-    .ordenacao {
-      margin-left: 6px;
-      font-size: 10px;
-    }
-  </style>
-</head>
-<body>
-  <h1>Programação de cargas Della Volpe</h1>
-
-  <div class="filtros">
-    <label>Cliente:</label>
-    <select id="filtroCliente">
-      <option value="">Todos</option>
-    </select>
-
-    <label>Dia da Semana:</label>
-    <select id="filtroDia">
-      <option value="">Todos</option>
-      <option value="SEG">Segunda (SEG)</option>
-      <option value="TER">Terça (TER)</option>
-      <option value="QUA">Quarta (QUA)</option>
-      <option value="QUI">Quinta (QUI)</option>
-      <option value="SEX">Sexta (SEX)</option>
-      <option value="SAB">Sábado (SAB)</option>
-      <option value="DOM">Domingo (DOM)</option>
-    </select>
-  </div>
-
-  <div id="loading">Carregando dados...</div>
-  <table id="tabela" style="display:none;">
-    <thead id="cabecalho"></thead>
-    <tbody id="corpo"></tbody>
-  </table>
-
-  <label for="anotacoesGerais" class="anotacoes-gerais-label">Anotações Gerais</label>
-  <textarea id="anotacoesGerais" placeholder="Digite aqui suas observações gerais..."></textarea>
-
-  <script>
-    const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQkREcLQFJhAsxEq3WRVxHtYw46zSe3sDVJcQWOreQzFs6-u6PWF-cI8ndRTkQUFXfurUkkog0-NrZq/pub?output=csv";
-
-    let dados = [];
-    let cabecalho = [];
-    let ordem = { coluna: null, crescente: true };
-
-    const diaParaNumero = { 'SEG': 1, 'TER': 2, 'QUA': 3, 'QUI': 4, 'SEX': 5, 'SAB': 6, 'DOM': 7 };
-    const formasDia = {
-      'SEG': ['SEG', 'SEGUNDA', 'SEGUNDA-FEIRA', 'SEGUNDA FEIRA'],
-      'TER': ['TER', 'TERCA', 'TERÇA', 'TERÇA-FEIRA', 'TERCA-FEIRA', 'TERCA FEIRA'],
-      'QUA': ['QUA', 'QUARTA', 'QUARTA-FEIRA', 'QUARTA FEIRA'],
-      'QUI': ['QUI', 'QUINTA', 'QUINTA-FEIRA', 'QUINTA FEIRA'],
-      'SEX': ['SEX', 'SEXTA', 'SEXTA-FEIRA', 'SEXTA FEIRA'],
-      'SAB': ['SAB', 'SÁBADO', 'SABADO'],
-      'DOM': ['DOM', 'DOMINGO']
-    };
-
-    fetch(url)
-      .then(res => res.text())
-      .then(csv => {
-        const linhas = csv.split("\n").map(l => l.split(","));
-        const nonEmpty = linhas.filter(r => r.some(c => c && c.trim() !== ""));
-        cabecalho = nonEmpty[0].map(c => c.trim());
-        dados = nonEmpty.slice(1).map(l => {
-          const row = l.map(c => c.trim());
-          while (row.length < cabecalho.length) row.push("");
-          return row;
+  if (dia) {
+    const idxDiaSemana = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
+    if (idxDiaSemana !== -1) {
+      filtrados = filtrados.filter(l => {
+        const val = (l[idxDiaSemana] || "").toUpperCase().trim();
+        if (!val) return false;
+        if (/^\d+$/.test(val)) return Number(val) === diaParaNumero[dia];
+        if (val.includes(dia)) return true;
+        const formas = formasDia[dia] || [];
+        return formas.some(f => val.includes(f));
+      });
+    } else {
+      const idxDia = cabecalho.findIndex(h => h.toUpperCase() === dia);
+      if (idxDia !== -1) {
+        filtrados = filtrados.filter(l => {
+          const v = (l[idxDia] || "").toUpperCase().trim();
+          return v === "1" || v === "SIM" || v === "X";
         });
-
-        montarCabecalho();
-        montarOpcoesCliente();
-        atualizarTabela();
-
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("tabela").style.display = "table";
-      })
-      .catch(err => {
-        document.getElementById("loading").innerText = "Erro ao carregar planilha.";
-        console.error(err);
-      });
-
-    function montarCabecalho() {
-      const idxDiaSemana = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
-      const linhaCab = document.createElement("tr");
-
-      const thAnot = document.createElement("th");
-      thAnot.textContent = "Anotações";
-      linhaCab.appendChild(thAnot);
-
-      cabecalho.forEach((col, i) => {
-        if (i === idxDiaSemana) return;
-        const th = document.createElement("th");
-        th.textContent = col;
-        th.addEventListener("click", () => ordenarPor(i));
-        linhaCab.appendChild(th);
-      });
-
-      document.getElementById("cabecalho").innerHTML = "";
-      document.getElementById("cabecalho").appendChild(linhaCab);
-    }
-
-    function montarOpcoesCliente() {
-      const idxCliente = cabecalho.findIndex(h => h.toUpperCase() === "CLIENTE");
-      if (idxCliente === -1) return;
-      const clientes = [...new Set(dados.map(l => l[idxCliente]).filter(c => c))].sort();
-      const select = document.getElementById("filtroCliente");
-      clientes.forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c;
-        opt.textContent = c;
-        select.appendChild(opt);
-      });
-    }
-
-    function ordenarPor(idx) {
-      if (ordem.coluna === idx) {
-        ordem.crescente = !ordem.crescente;
-      } else {
-        ordem.coluna = idx;
-        ordem.crescente = true;
       }
-
-      dados.sort((a, b) => {
-        const valA = (a[idx] || "").toUpperCase();
-        const valB = (b[idx] || "").toUpperCase();
-        if (!isNaN(valA) && !isNaN(valB)) {
-          return ordem.crescente ? valA - valB : valB - valA;
-        }
-        return ordem.crescente ? valA.localeCompare(valB) : valB.localeCompare(valA);
-      });
-
-      const ths = document.querySelectorAll("#cabecalho th");
-      ths.forEach(th => th.innerHTML = th.textContent);
-      if (idx + 1 < ths.length) {
-        const seta = ordem.crescente ? "↑" : "↓";
-        ths[idx + 1].innerHTML = `${cabecalho[idx]} <span class="ordenacao">${seta}</span>`;
-      }
-
-      atualizarTabela();
     }
+  }
 
-    function atualizarTabela() {
-      const cliente = document.getElementById("filtroCliente").value;
-      const dia = document.getElementById("filtroDia").value;
-      let filtrados = [...dados];
+  const idxOcultar = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
+  const corpo = document.getElementById("corpo");
+  corpo.innerHTML = filtrados
+    .map((linha, i) => {
+      const tds = linha.map((c, j) => (j === idxOcultar ? null : `<td>${c}</td>`))
+                       .filter(Boolean)
+                       .join("");
+      const input = `<td><input type="text" id="anotacao_${i}"></td>`;
+      return `<tr>${input}${tds}</tr>`;
+    })
+    .join("");
 
-      if (cliente) {
-        const idxCliente = cabecalho.findIndex(h => h.toUpperCase() === "CLIENTE");
-        if (idxCliente !== -1) filtrados = filtrados.filter(l => (l[idxCliente] || "") === cliente);
-      }
-
-      if (dia) {
-        const idxDiaSemana = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
-        if (idxDiaSemana !== -1) {
-          filtrados = filtrados.filter(l => {
-            const val = (l[idxDiaSemana] || "").toUpperCase().trim();
-            if (!val) return false;
-            if (/^\d+$/.test(val)) return Number(val) === diaParaNumero[dia];
-            if (val.includes(dia)) return true;
-            const formas = formasDia[dia] || [];
-            return formas.some(f => val.includes(f));
-          });
-        } else {
-          const idxDia = cabecalho.findIndex(h => h.toUpperCase() === dia);
-          if (idxDia !== -1) {
-            filtrados = filtrados.filter(l => {
-              const v = (l[idxDia] || "").toUpperCase().trim();
-              return v === "1" || v === "SIM" || v === "X";
-            });
-          }
-        }
-      }
-
-      const idxOcultar = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
-      document.getElementById("corpo").innerHTML = filtrados
-        .map((linha, i) => {
-          const tds = linha.map((c, j) => (j === idxOcultar ? null : `<td>${c}</td>`))
-                           .filter(Boolean)
-                           .join("");
-          const input = `<td><input type="text" id="anotacao_${i}"></td>`; // placeholder removido
-          return `<tr>${input}${tds}</tr>`;
-        })
-        .join("");
+  // 🎨 Após montar a tabela, pinta as células com conteúdo
+  const celulas = corpo.querySelectorAll("td");
+  celulas.forEach(td => {
+    if (td.textContent.trim() !== "") {
+      td.style.backgroundColor = "#d8f5d8"; // verde claro
     }
-
-    document.getElementById("filtroCliente").addEventListener("change", atualizarTabela);
-    document.getElementById("filtroDia").addEventListener("change", atualizarTabela);
-  </script>
-</body>
-</html>
+  });
+}
