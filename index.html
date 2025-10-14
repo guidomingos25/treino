@@ -16,7 +16,7 @@
       margin-bottom: 15px;
       text-align: center;
     }
-    select {
+    select, input[type="text"] {
       padding: 6px;
       font-size: 14px;
       margin: 0 5px;
@@ -45,9 +45,6 @@
       background-color: #f2f2f2;
     }
     input[type="text"] {
-      width: 90%;
-      padding: 5px;
-      font-size: 13px;
       border: 1px solid #ccc;
       border-radius: 4px;
       box-sizing: border-box;
@@ -81,6 +78,9 @@
       margin-left: 6px;
       font-size: 10px;
     }
+    #filtroGeral {
+      width: 250px;
+    }
   </style>
 </head>
 <body>
@@ -103,6 +103,10 @@
       <option value="SAB">Sábado (SAB)</option>
       <option value="DOM">Domingo (DOM)</option>
     </select>
+
+    <!-- 🔍 Novo filtro geral -->
+    <label>Pesquisar:</label>
+    <input type="text" id="filtroGeral" placeholder="Digite para filtrar...">
   </div>
 
   <div id="loading">Carregando dados...</div>
@@ -219,14 +223,18 @@
     function atualizarTabela() {
       const cliente = document.getElementById("filtroCliente").value;
       const dia = document.getElementById("filtroDia").value;
+      const textoGeral = document.getElementById("filtroGeral").value.toLowerCase().trim();
+
       let filtrados = [...dados];
 
+      // 🎯 Filtro por cliente
       if (cliente) {
         const idxCliente = cabecalho.findIndex(h => h.toUpperCase() === "CLIENTE");
         if (idxCliente !== -1)
           filtrados = filtrados.filter(l => (l[idxCliente] || "") === cliente);
       }
 
+      // 🎯 Filtro por dia
       if (dia) {
         const idxDiaSemana = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
         if (idxDiaSemana !== -1) {
@@ -249,6 +257,13 @@
         }
       }
 
+      // 🔍 Novo filtro geral dinâmico
+      if (textoGeral) {
+        filtrados = filtrados.filter(linha =>
+          linha.some(cel => cel.toLowerCase().includes(textoGeral))
+        );
+      }
+
       const idxOcultar = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
       const corpo = document.getElementById("corpo");
 
@@ -263,7 +278,7 @@
         })
         .join("");
 
-      // 🎨 Pinta as últimas 14 colunas: 7 primeiras cinza, 7 últimas azul
+      // 🎨 Pinta as últimas 14 colunas: 7 cinza, 7 azul
       const linhas = corpo.querySelectorAll("tr");
       linhas.forEach(tr => {
         const tds = tr.querySelectorAll("td");
@@ -272,21 +287,19 @@
         const ultimas7 = ultimas14.slice(7);
 
         primeiras7.forEach(td => {
-          if (td.textContent.trim() !== "") {
-            td.style.backgroundColor = "#d3d3d3"; // Cinza claro
-          }
+          if (td.textContent.trim() !== "") td.style.backgroundColor = "#d3d3d3";
         });
 
         ultimas7.forEach(td => {
-          if (td.textContent.trim() !== "") {
-            td.style.backgroundColor = "#add8e6"; // Azul claro
-          }
+          if (td.textContent.trim() !== "") td.style.backgroundColor = "#add8e6";
         });
       });
     }
 
+    // Eventos
     document.getElementById("filtroCliente").addEventListener("change", atualizarTabela);
     document.getElementById("filtroDia").addEventListener("change", atualizarTabela);
+    document.getElementById("filtroGeral").addEventListener("input", atualizarTabela);
   </script>
 </body>
 </html>
