@@ -168,6 +168,11 @@
       thAnot.textContent = "Anotações";
       linhaCab.appendChild(thAnot);
 
+      // 🆕 Coluna de veículo
+      const thVeiculo = document.createElement("th");
+      thVeiculo.textContent = "Tipo de Veículo";
+      linhaCab.appendChild(thVeiculo);
+
       cabecalho.forEach((col, i) => {
         if (i === idxDiaSemana) return;
         const th = document.createElement("th");
@@ -212,9 +217,9 @@
 
       const ths = document.querySelectorAll("#cabecalho th");
       ths.forEach(th => th.innerHTML = th.textContent);
-      if (idx + 1 < ths.length) {
+      if (idx + 2 < ths.length) { // compensando a nova coluna de veículo
         const seta = ordem.crescente ? "↑" : "↓";
-        ths[idx + 1].innerHTML = `${cabecalho[idx]} <span class="ordenacao">${seta}</span>`;
+        ths[idx + 2].innerHTML = `${cabecalho[idx]} <span class="ordenacao">${seta}</span>`;
       }
 
       atualizarTabela();
@@ -227,14 +232,12 @@
 
       let filtrados = [...dados];
 
-      // 🎯 Filtro por cliente
       if (cliente) {
         const idxCliente = cabecalho.findIndex(h => h.toUpperCase() === "CLIENTE");
         if (idxCliente !== -1)
           filtrados = filtrados.filter(l => (l[idxCliente] || "") === cliente);
       }
 
-      // 🎯 Filtro por dia
       if (dia) {
         const idxDiaSemana = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
         if (idxDiaSemana !== -1) {
@@ -257,7 +260,6 @@
         }
       }
 
-      // 🔍 Novo filtro geral dinâmico
       if (textoGeral) {
         filtrados = filtrados.filter(linha =>
           linha.some(cel => cel.toLowerCase().includes(textoGeral))
@@ -273,8 +275,20 @@
             .map((c, j) => (j === idxOcultar ? null : `<td>${c}</td>`))
             .filter(Boolean)
             .join("");
+          
           const input = `<td><input type="text" id="anotacao_${i}"></td>`;
-          return `<tr>${input}${tds}</tr>`;
+
+          // 🆕 Select de tipo de veículo
+          const tipos = ["Utilitário", "Van", "3/4", "Truck", "Carreta", "Rodotrem"];
+          const selectVeiculo = `
+            <td>
+              <select id="veiculo_${i}">
+                <option value="">Selecione</option>
+                ${tipos.map(v => `<option value="${v}">${v}</option>`).join("")}
+              </select>
+            </td>`;
+
+          return `<tr>${input}${selectVeiculo}${tds}</tr>`;
         })
         .join("");
 
@@ -296,7 +310,6 @@
       });
     }
 
-    // Eventos
     document.getElementById("filtroCliente").addEventListener("change", atualizarTabela);
     document.getElementById("filtroDia").addEventListener("change", atualizarTabela);
     document.getElementById("filtroGeral").addEventListener("input", atualizarTabela);
