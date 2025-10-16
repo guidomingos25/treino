@@ -119,10 +119,10 @@
       <div class="row">
         <div>
           <label for="vocativoSelect">Vocativo (ALMOX DESTINO)</label>
-          <select id="vocativoSelect">
-            <option value="">-- selecione um vocativo --</option>
+          <input list="vocativosList" id="vocativoSelect" placeholder="Digite ou selecione um vocativo">
+          <datalist id="vocativosList">
             <!-- opções serão preenchidas por JS -->
-          </select>
+          </datalist>
         </div>
         <div>
           <label for="clienteNovo">Cliente (preenchido automaticamente)</label>
@@ -421,13 +421,13 @@
 
     // Preenche select de vocativos com base no objeto vocativosClientes
     function preencherVocativos() {
-      vocativoSelect.innerHTML = '<option value="">-- selecione um vocativo --</option>';
+      const datalist = document.getElementById("vocativosList");
+      datalist.innerHTML = "";
       const keys = Object.keys(vocativosClientes || {}).sort((a,b)=>a.localeCompare(b));
       keys.forEach(k => {
         const opt = document.createElement("option");
         opt.value = k;
-        opt.textContent = k;
-        vocativoSelect.appendChild(opt);
+        datalist.appendChild(opt);
       });
     }
 
@@ -530,5 +530,6 @@
   </script>
 </body>
 </html>
+
 
 
