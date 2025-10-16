@@ -104,13 +104,11 @@
     <tbody id="corpo"></tbody>
   </table>
 
-  <!-- 🆕 Botão para gerar PDF -->
   <button id="btnPDF" onclick="gerarPDF()">Salvar PDF (veículos selecionados)</button>
 
   <label for="anotacoesGerais" class="anotacoes-gerais-label">Anotações Gerais</label>
   <textarea id="anotacoesGerais" placeholder="Digite aqui suas observações gerais..."></textarea>
 
-  <!-- Bibliotecas jsPDF + autotable -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
@@ -301,7 +299,7 @@
         });
       });
 
-      // 🆕 Evento para pintar colunas quando há veículo selecionado
+      // ✅ Correção: fecha o parêntese corretamente
       const selects = corpo.querySelectorAll("select[id^='veiculo_']");
       selects.forEach(sel => {
         sel.addEventListener("change", e => {
@@ -310,7 +308,7 @@
           const primeiras7 = Array.from(tds).slice(0, 7);
           primeiras7.forEach(td => td.style.backgroundColor = "");
           if (e.target.value) {
-            primeiras7.forEach(td => td.style.backgroundColor = "#c0ffc0";
+            primeiras7.forEach(td => td.style.backgroundColor = "#c0ffc0");
           }
         });
       });
@@ -320,7 +318,6 @@
     document.getElementById("filtroDia").addEventListener("change", atualizarTabela);
     document.getElementById("filtroGeral").addEventListener("input", atualizarTabela);
 
-    // 🧾 Função para gerar o PDF
     function gerarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
