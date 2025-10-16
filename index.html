@@ -9,30 +9,11 @@
       background: #f9fafb;
       margin: 20px;
     }
-    h1 {
-      text-align: center;
-    }
-    .filtros {
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    select, input[type="text"] {
-      padding: 6px;
-      font-size: 14px;
-      margin: 0 5px;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 5px;
-      text-align: center;
-      font-size: 13px;
-    }
+    h1 { text-align: center; }
+    .filtros { margin-bottom: 15px; text-align: center; }
+    select, input[type="text"] { padding: 6px; font-size: 14px; margin: 0 5px; }
+    table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    th, td { border: 1px solid #ddd; padding: 5px; text-align: center; font-size: 13px; }
     th {
       background-color: #4CAF50;
       color: white;
@@ -41,45 +22,60 @@
       cursor: pointer;
       user-select: none;
     }
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
-    input[type="text"] {
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    td:first-child, th:first-child {
-      width: 150px;
-    }
-    #loading {
-      text-align: center;
-      font-size: 18px;
-    }
-    #anotacoesGerais {
-      width: 100%;
-      height: 120px;
-      margin-top: 30px;
-      padding: 10px;
-      font-size: 14px;
-      border: 1px solid #bbb;
+    tr:nth-child(even) { background-color: #f2f2f2; }
+    input[type="text"] { border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    td:first-child, th:first-child { width: 150px; }
+    #loading { text-align: center; font-size: 18px; }
+    #anotacoesGerais { width: 100%; height: 120px; margin-top: 30px; padding: 10px; font-size: 14px; border: 1px solid #bbb; border-radius: 6px; box-sizing: border-box; resize: vertical; }
+    label.anotacoes-gerais-label { display: block; font-weight: bold; margin-top: 30px; margin-bottom: 5px; font-size: 15px; }
+    .ordenacao { margin-left: 6px; font-size: 10px; }
+    #filtroGeral { width: 250px; }
+
+    /* Estilos do botão + e do formulário de inserção */
+    #addRowContainer { margin-top: 12px; text-align: left; }
+    #addButton {
+      font-size: 20px;
+      width: 36px;
+      height: 36px;
       border-radius: 6px;
-      box-sizing: border-box;
-      resize: vertical;
+      border: 1px solid #4CAF50;
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    label.anotacoes-gerais-label {
-      display: block;
-      font-weight: bold;
-      margin-top: 30px;
-      margin-bottom: 5px;
-      font-size: 15px;
+    #newRowForm {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+      max-width: 100%;
     }
-    .ordenacao {
-      margin-left: 6px;
-      font-size: 10px;
+    #newRowForm label { display: block; font-size: 13px; margin-top: 6px; }
+    #newRowForm select, #newRowForm input[type="text"] { width: 100%; max-width: 480px; padding: 6px; margin-top:4px; }
+    #insertBtn {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      background: #4CAF50;
+      color: white;
+      cursor: pointer;
     }
-    #filtroGeral {
-      width: 250px;
+    #cancelInsert {
+      margin-left: 8px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: white;
+      cursor: pointer;
+    }
+
+    @media (min-width: 900px) {
+      #newRowForm .row { display:flex; gap:12px; align-items: flex-end; }
+      #newRowForm .row > div { flex: 1; }
     }
   </style>
 </head>
@@ -114,6 +110,52 @@
     <tbody id="corpo"></tbody>
   </table>
 
+  <div id="addRowContainer">
+    <!-- botão + -->
+    <button id="addButton" title="Adicionar nova linha">+</button>
+
+    <!-- formulário oculto aparece ao clicar no + -->
+    <div id="newRowForm" aria-hidden="true">
+      <div class="row">
+        <div>
+          <label for="vocativoSelect">Vocativo (ALMOX DESTINO)</label>
+          <select id="vocativoSelect">
+            <option value="">-- selecione um vocativo --</option>
+            <!-- opções serão preenchidas por JS -->
+          </select>
+        </div>
+        <div>
+          <label for="clienteNovo">Cliente (preenchido automaticamente)</label>
+          <input type="text" id="clienteNovo" readonly placeholder="Cliente será preenchido ao selecionar o vocativo">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:8px;">
+        <div>
+          <label for="veiculoNovo">Tipo de Veículo</label>
+          <select id="veiculoNovo">
+            <option value=""></option>
+            <option>Utilitário</option>
+            <option>Van</option>
+            <option>3/4</option>
+            <option>Truck</option>
+            <option>Carreta</option>
+            <option>Rodotrem</option>
+          </select>
+        </div>
+        <div>
+          <label for="anotacaoNova">Anotação</label>
+          <input type="text" id="anotacaoNova" placeholder="Digite uma anotação (opcional)">
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <button id="insertBtn">Inserir</button>
+        <button id="cancelInsert">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <label for="anotacoesGerais" class="anotacoes-gerais-label">Anotações Gerais</label>
   <textarea id="anotacoesGerais" placeholder="Digite aqui suas observações gerais..."></textarea>
 
@@ -135,6 +177,27 @@
       'DOM': ['DOM', 'DOMINGO']
     };
 
+    // ====== VOCATIVOS → CLIENTE ======
+    // Você pode colar aqui o JSON gerado a partir do seu Excel (mapa VOCATIVO -> CLIENTE).
+    // Exemplo mínimo:
+    // const vocativosClientes = { "ARC-SAO-FRAN-SC":"ARCELORMITTAL BRASIL S.A.", "VAL-CANAA DOS CARAJAS-PA":"VALE S.A." };
+    //
+    // *** IMPORTANTE ***
+    // Se quiser que eu já cole o JSON completo (o arquivo que você enviou tem ~1900 pares),
+    // me avise que eu colo aqui diretamente.
+    //
+    // Alternativa: carregue um arquivo vocativos.json ao lado do HTML e descomente o fetch abaixo.
+    //
+    let vocativosClientes = {}; // <<--- cole o JSON mapeamento aqui (VOCATIVO: CLIENTE)
+
+    // Exemplo de carregar externamente (se preferir manter JSON em arquivo):
+    // fetch('vocativos.json').then(r=>r.json()).then(j=>{ vocativosClientes = j; preencherVocativos(); });
+
+    // ====== fim vocativos ======
+
+    // Se o usuário deixou vocativosClientes vazio, ainda vamos inicializar a interface (sem opções).
+    // Quando você colar o JSON no vocativosClientes, chame preencherVocativos() ou recarregue a página.
+
     fetch(url)
       .then(res => res.text())
       .then(csv => {
@@ -150,6 +213,9 @@
         montarCabecalho();
         montarOpcoesCliente();
         atualizarTabela();
+
+        // preenchendo vocativos no formulário (caso vocativosClientes já tenha sido preenchido)
+        preencherVocativos();
 
         document.getElementById("loading").style.display = "none";
         document.getElementById("tabela").style.display = "table";
@@ -267,13 +333,14 @@
       const idxOcultar = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
       const corpo = document.getElementById("corpo");
 
+      // construir o innerHTML das linhas (mantendo a mesma estrutura que você já tinha)
       corpo.innerHTML = filtrados
         .map((linha, i) => {
           const tds = linha
             .map((c, j) => (j === idxOcultar ? null : `<td>${c}</td>`))
             .filter(Boolean)
             .join("");
-          
+
           const input = `<td><input type="text" id="anotacao_${i}"></td>`;
           const tipos = ["Utilitário", "Van", "3/4", "Truck", "Carreta", "Rodotrem"];
           const selectVeiculo = `
@@ -287,27 +354,37 @@
         })
         .join("");
 
-      // 🎨 Pinta as últimas 14 colunas (7 cinza, 7 azul)
+      // após inserir as linhas no DOM: aplicar pinturas e eventos
+      aplicarPinturasEEventos();
+    }
+
+    function aplicarPinturasEEventos() {
+      const corpo = document.getElementById("corpo");
       const linhas = corpo.querySelectorAll("tr");
+
       linhas.forEach(tr => {
         const tds = tr.querySelectorAll("td");
+        // pintar as últimas 14 colunas (se existirem)
         const ultimas14 = Array.from(tds).slice(-14);
         const primeiras7 = ultimas14.slice(0, 7);
         const ultimas7 = ultimas14.slice(7);
 
         primeiras7.forEach(td => {
           if (td.textContent.trim() !== "") td.style.backgroundColor = "#d3d3d3";
+          else td.style.backgroundColor = "";
         });
 
         ultimas7.forEach(td => {
           if (td.textContent.trim() !== "") td.style.backgroundColor = "#add8e6";
+          else td.style.backgroundColor = "";
         });
       });
 
-      // 🆕 Evento para pintar as 7 primeiras colunas ao selecionar veículo
+      // adicionar listener para pintar as 7 primeiras colunas ao selecionar veículo
       const selects = corpo.querySelectorAll("select[id^='veiculo_']");
       selects.forEach(sel => {
-        sel.addEventListener("change", e => {
+        // remover listeners duplicados (mínimo: reatribuir)
+        sel.onchange = function(e) {
           const tr = e.target.closest("tr");
           const tds = tr.querySelectorAll("td");
           const primeiras7 = Array.from(tds).slice(0, 7);
@@ -315,13 +392,136 @@
           if (e.target.value) {
             primeiras7.forEach(td => td.style.backgroundColor = "#c0ffc0");
           }
-        });
+        };
       });
     }
 
+    // ====== Formulário / Inserção de nova linha (botão +) ======
+    const addButton = document.getElementById("addButton");
+    const newRowForm = document.getElementById("newRowForm");
+    const vocativoSelect = document.getElementById("vocativoSelect");
+    const clienteNovo = document.getElementById("clienteNovo");
+    const veiculoNovo = document.getElementById("veiculoNovo");
+    const anotacaoNova = document.getElementById("anotacaoNova");
+    const insertBtn = document.getElementById("insertBtn");
+    const cancelBtn = document.getElementById("cancelInsert");
+
+    addButton.addEventListener("click", () => {
+      const vis = newRowForm.style.display === "block";
+      newRowForm.style.display = vis ? "none" : "block";
+      newRowForm.setAttribute('aria-hidden', vis ? 'true' : 'false');
+      // se for mostrar, posiciona o foco no select
+      if (!vis) setTimeout(()=>vocativoSelect.focus(), 120);
+    });
+
+    // Preenche select de vocativos com base no objeto vocativosClientes
+    function preencherVocativos() {
+      vocativoSelect.innerHTML = '<option value="">-- selecione um vocativo --</option>';
+      const keys = Object.keys(vocativosClientes || {}).sort((a,b)=>a.localeCompare(b));
+      keys.forEach(k => {
+        const opt = document.createElement("option");
+        opt.value = k;
+        opt.textContent = k;
+        vocativoSelect.appendChild(opt);
+      });
+    }
+
+    // Se o usuário selecionar um vocativo, preenche o cliente automaticamente (apenas no formulário)
+    vocativoSelect.addEventListener("change", (e) => {
+      const v = e.target.value;
+      if (v && vocativosClientes[v]) clienteNovo.value = vocativosClientes[v];
+      else clienteNovo.value = "";
+    });
+
+    cancelBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      newRowForm.style.display = "none";
+      newRowForm.setAttribute('aria-hidden', 'true');
+      // limpar campos
+      vocativoSelect.value = "";
+      clienteNovo.value = "";
+      veiculoNovo.value = "";
+      anotacaoNova.value = "";
+    });
+
+    insertBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      // montar a nova linha com a mesma estrutura das linhas da tabela:
+      // <td>Anotação</td><td>Veículo select</td><td>...colunas da planilha (exceto "DIA DA SEMANA")...</td>
+
+      const voc = vocativoSelect.value || "";
+      const cli = clienteNovo.value || "";
+      const veh = veiculoNovo.value || "";
+      const anot = anotacaoNova.value || "";
+
+      // Criar array de células para as colunas da planilha (mantendo ordem e ocultando "DIA DA SEMANA")
+      const idxOcultar = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
+
+      // Criar células vazias para cada coluna da planilha (exceto idxOcultar), 
+      // mas precisamos colocar vocativo e cliente nas colunas corretas se existirem (opcional).
+      // Tentaremos localizar índices de "ALMOX DESTINO" (vocativo) e "CLIENTE" para preencher automaticamente.
+      const idxAlmox = cabecalho.findIndex(h => h.toUpperCase().includes("ALMOX") || h.toUpperCase().includes("ALMOX DESTINO") || h.toUpperCase() === "ALMOX DESTINO");
+      const idxCliente = cabecalho.findIndex(h => h.toUpperCase() === "CLIENTE");
+
+      // montar array com valores em branco
+      const valores = cabecalho.map(()=>"");
+
+      if (idxAlmox !== -1) valores[idxAlmox] = voc;
+      if (idxCliente !== -1) valores[idxCliente] = cli;
+
+      // agora transformar em tds (pulando idxOcultar)
+      const tdsPlanilha = valores.map((c, j) => (j === idxOcultar ? null : `<td>${c}</td>`)).filter(Boolean).join("");
+
+      // anotações e select veículo (id único)
+      // gerar id único simples para o select/entrada (timestamp)
+      const uniqueId = Date.now();
+      const anotTd = `<td><input type="text" id="anot_new_${uniqueId}" value="${escapeHtml(anot)}"></td>`;
+      const tipos = ["Utilitário", "Van", "3/4", "Truck", "Carreta", "Rodotrem"];
+      const selectVeic = `<td><select id="veic_new_${uniqueId}"><option value=""></option>${tipos.map(v=>`<option${veh===v?' selected':''} value="${v}">${v}</option>`).join("")}</select></td>`;
+
+      const newRowHtml = `<tr>${anotTd}${selectVeic}${tdsPlanilha}</tr>`;
+
+      // adicionar ao final do corpo da tabela
+      const corpo = document.getElementById("corpo");
+      corpo.insertAdjacentHTML('beforeend', newRowHtml);
+
+      // aplicar pinturas e eventos na nova linha
+      aplicarPinturasEEventos();
+
+      // fechar e limpar o formulário
+      newRowForm.style.display = "none";
+      newRowForm.setAttribute('aria-hidden', 'true');
+      vocativoSelect.value = "";
+      clienteNovo.value = "";
+      veiculoNovo.value = "";
+      anotacaoNova.value = "";
+    });
+
+    // utilitário para escapar texto antes de inserir em value/html
+    function escapeHtml(unsafe) {
+      return String(unsafe)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // adicionar listeners padrão de filtros
     document.getElementById("filtroCliente").addEventListener("change", atualizarTabela);
     document.getElementById("filtroDia").addEventListener("change", atualizarTabela);
     document.getElementById("filtroGeral").addEventListener("input", atualizarTabela);
+
+    // se vocativosClientes for preenchido externamente (p.ex. colado no script), chamar preencherVocativos()
+    // Exemplo de preenchimento automático (se você colar o JSON abaixo, descomente a linha):
+    // vocativosClientes = { "ARC-SAO-FRAN-SC":"ARCELORMITTAL BRASIL S.A.", "VAL-CANAA DOS CARAJAS-PA":"VALE S.A.", ... };
+    // preencherVocativos();
+
+    // chamada inicial caso o objeto já tenha sido preenchido antes da carga do arquivo CSV
+    if (Object.keys(vocativosClientes).length > 0) {
+      // preenche o dropdown de vocativos
+      preencherVocativos();
+    }
   </script>
 </body>
 </html>
