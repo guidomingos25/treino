@@ -81,19 +81,18 @@
     #filtroGeral {
       width: 250px;
     }
-    /* Botão PDF */
-    .pdf-btn {
+    .download-btn {
       display: block;
       margin: 20px auto;
       background-color: #4CAF50;
       color: white;
       border: none;
-      padding: 10px 20px;
+      padding: 10px 18px;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 15px;
+      font-size: 16px;
     }
-    .pdf-btn:hover {
+    .download-btn:hover {
       background-color: #388E3C;
     }
   </style>
@@ -123,8 +122,7 @@
     <input type="text" id="filtroGeral" placeholder="Digite para filtrar...">
   </div>
 
-  <!-- Botão para gerar PDF -->
-  <button class="pdf-btn" onclick="gerarPDF()">📄 Gerar PDF da Página</button>
+  <button class="download-btn" onclick="gerarPDF()">📄 Gerar PDF (somente com veículo selecionado)</button>
 
   <div id="loading">Carregando dados...</div>
   <table id="tabela" style="display:none;">
@@ -135,28 +133,13 @@
   <label for="anotacoesGerais" class="anotacoes-gerais-label">Anotações Gerais</label>
   <textarea id="anotacoesGerais" placeholder="Digite aqui suas observações gerais..."></textarea>
 
-  <!-- Bibliotecas necessárias -->
+  <!-- Bibliotecas -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <script>
-    // 🔹 Função para gerar o PDF da página inteira
-    async function gerarPDF() {
-      const { jsPDF } = window.jspdf;
-      const pagina = document.body;
-      const canvas = await html2canvas(pagina, { scale: 2 });
-      const imgData = canvas.toDataURL("image/png");
-
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save("programacao_della_volpe.pdf");
-    }
-
-    // 🔹 Código original da sua tabela e filtros
     const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQkREcLQFJhAsxEq3WRVxHtYw46zSe3sDVJcQWOreQzFs6-u6PWF-cI8ndRTkQUFXfurUkkog0-NrZq/pub?output=csv";
+
     let dados = [];
     let cabecalho = [];
     let ordem = { coluna: null, crescente: true };
@@ -183,9 +166,11 @@
           while (row.length < cabecalho.length) row.push("");
           return row;
         });
+
         montarCabecalho();
         montarOpcoesCliente();
         atualizarTabela();
+
         document.getElementById("loading").style.display = "none";
         document.getElementById("tabela").style.display = "table";
       })
@@ -232,15 +217,28 @@
     }
 
     function ordenarPor(idx) {
-      if (ordem.coluna === idx) ordem.crescente = !ordem.crescente;
-      else { ordem.coluna = idx; ordem.crescente = true; }
+      if (ordem.coluna === idx) {
+        ordem.crescente = !ordem.crescente;
+      } else {
+        ordem.coluna = idx;
+        ordem.crescente = true;
+      }
 
       dados.sort((a, b) => {
         const valA = (a[idx] || "").toUpperCase();
         const valB = (b[idx] || "").toUpperCase();
-        if (!isNaN(valA) && !isNaN(valB)) return ordem.crescente ? valA - valB : valB - valA;
+        if (!isNaN(valA) && !isNaN(valB)) {
+          return ordem.crescente ? valA - valB : valB - valA;
+        }
         return ordem.crescente ? valA.localeCompare(valB) : valB.localeCompare(valA);
       });
+
+      const ths = document.querySelectorAll("#cabecalho th");
+      ths.forEach(th => th.innerHTML = th.textContent);
+      if (idx + 2 < ths.length) {
+        const seta = ordem.crescente ? "↑" : "↓";
+        ths[idx + 2].innerHTML = `${cabecalho[idx]} <span class="ordenacao">${seta}</span>`;
+      }
 
       atualizarTabela();
     }
@@ -251,9 +249,11 @@
       const textoGeral = document.getElementById("filtroGeral").value.toLowerCase().trim();
 
       let filtrados = [...dados];
+
       if (cliente) {
         const idxCliente = cabecalho.findIndex(h => h.toUpperCase() === "CLIENTE");
-        filtrados = filtrados.filter(l => (l[idxCliente] || "") === cliente);
+        if (idxCliente !== -1)
+          filtrados = filtrados.filter(l => (l[idxCliente] || "") === cliente);
       }
 
       if (dia) {
@@ -267,6 +267,14 @@
             const formas = formasDia[dia] || [];
             return formas.some(f => val.includes(f));
           });
+        } else {
+          const idxDia = cabecalho.findIndex(h => h.toUpperCase() === dia);
+          if (idxDia !== -1) {
+            filtrados = filtrados.filter(l => {
+              const v = (l[idxDia] || "").toUpperCase().trim();
+              return v === "1" || v === "SIM" || v === "X";
+            });
+          }
         }
       }
 
@@ -278,30 +286,95 @@
 
       const idxOcultar = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
       const corpo = document.getElementById("corpo");
-      corpo.innerHTML = filtrados.map((linha, i) => {
-        const tds = linha.map((c, j) => (j === idxOcultar ? null : `<td>${c}</td>`)).filter(Boolean).join("");
-        const input = `<td><input type="text" id="anotacao_${i}"></td>`;
-        const tipos = ["Utilitário", "Van", "3/4", "Truck", "Carreta", "Rodotrem"];
-        const selectVeiculo = `
-          <td>
-            <select id="veiculo_${i}">
-              <option value=""></option>
-              ${tipos.map(v => `<option value="${v}">${v}</option>`).join("")}
-            </select>
-          </td>`;
-        return `<tr>${input}${selectVeiculo}${tds}</tr>`;
-      }).join("");
 
-      // Cores nas últimas colunas
+      corpo.innerHTML = filtrados
+        .map((linha, i) => {
+          const tds = linha
+            .map((c, j) => (j === idxOcultar ? null : `<td>${c}</td>`))
+            .filter(Boolean)
+            .join("");
+          
+          const input = `<td><input type="text" id="anotacao_${i}"></td>`;
+          const tipos = ["Utilitário", "Van", "3/4", "Truck", "Carreta", "Rodotrem"];
+          const selectVeiculo = `
+            <td>
+              <select id="veiculo_${i}">
+                <option value=""></option>
+                ${tipos.map(v => `<option value="${v}">${v}</option>`).join("")}
+              </select>
+            </td>`;
+          return `<tr>${input}${selectVeiculo}${tds}</tr>`;
+        })
+        .join("");
+
+      // 🎨 Pinta as últimas 14 colunas (7 cinza, 7 azul)
       const linhas = corpo.querySelectorAll("tr");
       linhas.forEach(tr => {
         const tds = tr.querySelectorAll("td");
         const ultimas14 = Array.from(tds).slice(-14);
         const primeiras7 = ultimas14.slice(0, 7);
         const ultimas7 = ultimas14.slice(7);
-        primeiras7.forEach(td => { if (td.textContent.trim()) td.style.backgroundColor = "#d3d3d3"; });
-        ultimas7.forEach(td => { if (td.textContent.trim()) td.style.backgroundColor = "#add8e6"; });
+
+        primeiras7.forEach(td => {
+          if (td.textContent.trim() !== "") td.style.backgroundColor = "#d3d3d3";
+        });
+
+        ultimas7.forEach(td => {
+          if (td.textContent.trim() !== "") td.style.backgroundColor = "#add8e6";
+        });
       });
+
+      // 🆕 Evento para pintar as 7 primeiras colunas ao selecionar veículo
+      const selects = corpo.querySelectorAll("select[id^='veiculo_']");
+      selects.forEach(sel => {
+        sel.addEventListener("change", e => {
+          const tr = e.target.closest("tr");
+          const tds = tr.querySelectorAll("td");
+          const primeiras7 = Array.from(tds).slice(0, 7);
+          primeiras7.forEach(td => td.style.backgroundColor = "");
+          if (e.target.value) {
+            primeiras7.forEach(td => td.style.backgroundColor = "#c0ffc0";
+          }
+        });
+      });
+    }
+
+    // 🧾 Função: gerar PDF somente das linhas com veículo selecionado
+    async function gerarPDF() {
+      const { jsPDF } = window.jspdf;
+      const corpo = document.querySelector("#corpo");
+      const linhasSelecionadas = Array.from(corpo.querySelectorAll("tr")).filter(tr => {
+        const sel = tr.querySelector("select");
+        return sel && sel.value;
+      });
+
+      if (linhasSelecionadas.length === 0) {
+        alert("Nenhuma linha com veículo selecionado.");
+        return;
+      }
+
+      // Cria uma cópia temporária da tabela só com as linhas válidas
+      const tabelaTemp = document.createElement("table");
+      tabelaTemp.innerHTML = `
+        <thead>${document.querySelector("#cabecalho").innerHTML}</thead>
+        <tbody>${linhasSelecionadas.map(tr => tr.outerHTML).join("")}</tbody>
+      `;
+      tabelaTemp.style.borderCollapse = "collapse";
+      tabelaTemp.style.width = "100%";
+      tabelaTemp.style.background = "white";
+
+      document.body.appendChild(tabelaTemp);
+      const canvas = await html2canvas(tabelaTemp, { scale: 2 });
+      document.body.removeChild(tabelaTemp);
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save("programacao_veiculos.pdf");
     }
 
     document.getElementById("filtroCliente").addEventListener("change", atualizarTabela);
