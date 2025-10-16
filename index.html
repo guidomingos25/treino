@@ -2409,7 +2409,15 @@
 
       // aplicar pinturas e eventos na nova linha
       aplicarPinturasEEventos();
-
+      
+      // pintar a nova linha de verde caso o veículo já esteja selecionado
+      const novaLinha = corpo.querySelector(`#veic_new_${uniqueId}`).closest("tr");
+      if (veh) {
+        const tds = novaLinha.querySelectorAll("td");
+        const primeiras7 = Array.from(tds).slice(0,7);
+        primeiras7.forEach(td => td.style.backgroundColor = "#c0ffc0");
+      }
+      
       // fechar e limpar o formulário
       newRowForm.style.display = "none";
       newRowForm.setAttribute('aria-hidden', 'true');
@@ -2447,6 +2455,7 @@
   </script>
 </body>
 </html>
+
 
 
 
