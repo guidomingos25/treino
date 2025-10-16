@@ -1,319 +1,109 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>Programação</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9fafb;
-      margin: 20px;
-    }
-    h1 {
-      text-align: center;
-    }
-    .filtros {
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    select, input[type="text"] {
-      padding: 6px;
-      font-size: 14px;
-      margin: 0 5px;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 5px;
-      text-align: center;
-      font-size: 13px;
-    }
-    th {
-      background-color: #4CAF50;
-      color: white;
-      position: sticky;
-      top: 0;
-      cursor: pointer;
-      user-select: none;
-    }
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
-    input[type="text"] {
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    td:first-child, th:first-child {
-      width: 150px;
-    }
-    #loading {
-      text-align: center;
-      font-size: 18px;
-    }
-    #anotacoesGerais {
-      width: 100%;
-      height: 120px;
-      margin-top: 30px;
-      padding: 10px;
-      font-size: 14px;
-      border: 1px solid #bbb;
-      border-radius: 6px;
-      box-sizing: border-box;
-      resize: vertical;
-    }
-    label.anotacoes-gerais-label {
-      display: block;
-      font-weight: bold;
-      margin-top: 30px;
-      margin-bottom: 5px;
-      font-size: 15px;
-    }
-    .ordenacao {
-      margin-left: 6px;
-      font-size: 10px;
-    }
-    #filtroGeral {
-      width: 250px;
-    }
-  </style>
-</head>
-<body>
-  <h1>Programação de cargas Della Volpe</h1>
+<script>
+  // ... (todo seu código anterior permanece igual até o final da função atualizarTabela)
 
-  <div class="filtros">
-    <label>Cliente:</label>
-    <select id="filtroCliente">
-      <option value="">Todos</option>
-    </select>
+  function atualizarTabela() {
+    const cliente = document.getElementById("filtroCliente").value;
+    const dia = document.getElementById("filtroDia").value;
+    const textoGeral = document.getElementById("filtroGeral").value.toLowerCase().trim();
 
-    <label>Dia da Semana:</label>
-    <select id="filtroDia">
-      <option value="">Todos</option>
-      <option value="SEG">Segunda (SEG)</option>
-      <option value="TER">Terça (TER)</option>
-      <option value="QUA">Quarta (QUA)</option>
-      <option value="QUI">Quinta (QUI)</option>
-      <option value="SEX">Sexta (SEX)</option>
-      <option value="SAB">Sábado (SAB)</option>
-      <option value="DOM">Domingo (DOM)</option>
-    </select>
+    let filtrados = [...dados];
 
-    <!-- 🔍 Novo filtro geral -->
-    <label>Pesquisar:</label>
-    <input type="text" id="filtroGeral" placeholder="Digite para filtrar...">
-  </div>
-
-  <div id="loading">Carregando dados...</div>
-  <table id="tabela" style="display:none;">
-    <thead id="cabecalho"></thead>
-    <tbody id="corpo"></tbody>
-  </table>
-
-  <label for="anotacoesGerais" class="anotacoes-gerais-label">Anotações Gerais</label>
-  <textarea id="anotacoesGerais" placeholder="Digite aqui suas observações gerais..."></textarea>
-
-  <script>
-    const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQkREcLQFJhAsxEq3WRVxHtYw46zSe3sDVJcQWOreQzFs6-u6PWF-cI8ndRTkQUFXfurUkkog0-NrZq/pub?output=csv";
-
-    let dados = [];
-    let cabecalho = [];
-    let ordem = { coluna: null, crescente: true };
-
-    const diaParaNumero = { 'SEG': 1, 'TER': 2, 'QUA': 3, 'QUI': 4, 'SEX': 5, 'SAB': 6, 'DOM': 7 };
-    const formasDia = {
-      'SEG': ['SEG', 'SEGUNDA', 'SEGUNDA-FEIRA', 'SEGUNDA FEIRA'],
-      'TER': ['TER', 'TERCA', 'TERÇA', 'TERÇA-FEIRA', 'TERCA-FEIRA', 'TERCA FEIRA'],
-      'QUA': ['QUA', 'QUARTA', 'QUARTA-FEIRA', 'QUARTA FEIRA'],
-      'QUI': ['QUI', 'QUINTA', 'QUINTA-FEIRA', 'QUINTA FEIRA'],
-      'SEX': ['SEX', 'SEXTA', 'SEXTA-FEIRA', 'SEXTA FEIRA'],
-      'SAB': ['SAB', 'SÁBADO', 'SABADO'],
-      'DOM': ['DOM', 'DOMINGO']
-    };
-
-    fetch(url)
-      .then(res => res.text())
-      .then(csv => {
-        const linhas = csv.split("\n").map(l => l.split(","));
-        const nonEmpty = linhas.filter(r => r.some(c => c && c.trim() !== ""));
-        cabecalho = nonEmpty[0].map(c => c.trim());
-        dados = nonEmpty.slice(1).map(l => {
-          const row = l.map(c => c.trim());
-          while (row.length < cabecalho.length) row.push("");
-          return row;
-        });
-
-        montarCabecalho();
-        montarOpcoesCliente();
-        atualizarTabela();
-
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("tabela").style.display = "table";
-      })
-      .catch(err => {
-        document.getElementById("loading").innerText = "Erro ao carregar planilha.";
-        console.error(err);
-      });
-
-    function montarCabecalho() {
-      const idxDiaSemana = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
-      const linhaCab = document.createElement("tr");
-
-      const thAnot = document.createElement("th");
-      thAnot.textContent = "Anotações";
-      linhaCab.appendChild(thAnot);
-
-      // 🆕 Coluna de veículo
-      const thVeiculo = document.createElement("th");
-      thVeiculo.textContent = "Tipo de Veículo";
-      linhaCab.appendChild(thVeiculo);
-
-      cabecalho.forEach((col, i) => {
-        if (i === idxDiaSemana) return;
-        const th = document.createElement("th");
-        th.textContent = col;
-        th.addEventListener("click", () => ordenarPor(i));
-        linhaCab.appendChild(th);
-      });
-
-      document.getElementById("cabecalho").innerHTML = "";
-      document.getElementById("cabecalho").appendChild(linhaCab);
-    }
-
-    function montarOpcoesCliente() {
+    if (cliente) {
       const idxCliente = cabecalho.findIndex(h => h.toUpperCase() === "CLIENTE");
-      if (idxCliente === -1) return;
-      const clientes = [...new Set(dados.map(l => l[idxCliente]).filter(c => c))].sort();
-      const select = document.getElementById("filtroCliente");
-      clientes.forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c;
-        opt.textContent = c;
-        select.appendChild(opt);
-      });
+      if (idxCliente !== -1)
+        filtrados = filtrados.filter(l => (l[idxCliente] || "") === cliente);
     }
 
-    function ordenarPor(idx) {
-      if (ordem.coluna === idx) {
-        ordem.crescente = !ordem.crescente;
+    if (dia) {
+      const idxDiaSemana = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
+      if (idxDiaSemana !== -1) {
+        filtrados = filtrados.filter(l => {
+          const val = (l[idxDiaSemana] || "").toUpperCase().trim();
+          if (!val) return false;
+          if (/^\d+$/.test(val)) return Number(val) === diaParaNumero[dia];
+          if (val.includes(dia)) return true;
+          const formas = formasDia[dia] || [];
+          return formas.some(f => val.includes(f));
+        });
       } else {
-        ordem.coluna = idx;
-        ordem.crescente = true;
-      }
-
-      dados.sort((a, b) => {
-        const valA = (a[idx] || "").toUpperCase();
-        const valB = (b[idx] || "").toUpperCase();
-        if (!isNaN(valA) && !isNaN(valB)) {
-          return ordem.crescente ? valA - valB : valB - valA;
-        }
-        return ordem.crescente ? valA.localeCompare(valB) : valB.localeCompare(valA);
-      });
-
-      const ths = document.querySelectorAll("#cabecalho th");
-      ths.forEach(th => th.innerHTML = th.textContent);
-      if (idx + 2 < ths.length) { // compensando a nova coluna de veículo
-        const seta = ordem.crescente ? "↑" : "↓";
-        ths[idx + 2].innerHTML = `${cabecalho[idx]} <span class="ordenacao">${seta}</span>`;
-      }
-
-      atualizarTabela();
-    }
-
-    function atualizarTabela() {
-      const cliente = document.getElementById("filtroCliente").value;
-      const dia = document.getElementById("filtroDia").value;
-      const textoGeral = document.getElementById("filtroGeral").value.toLowerCase().trim();
-
-      let filtrados = [...dados];
-
-      if (cliente) {
-        const idxCliente = cabecalho.findIndex(h => h.toUpperCase() === "CLIENTE");
-        if (idxCliente !== -1)
-          filtrados = filtrados.filter(l => (l[idxCliente] || "") === cliente);
-      }
-
-      if (dia) {
-        const idxDiaSemana = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
-        if (idxDiaSemana !== -1) {
+        const idxDia = cabecalho.findIndex(h => h.toUpperCase() === dia);
+        if (idxDia !== -1) {
           filtrados = filtrados.filter(l => {
-            const val = (l[idxDiaSemana] || "").toUpperCase().trim();
-            if (!val) return false;
-            if (/^\d+$/.test(val)) return Number(val) === diaParaNumero[dia];
-            if (val.includes(dia)) return true;
-            const formas = formasDia[dia] || [];
-            return formas.some(f => val.includes(f));
+            const v = (l[idxDia] || "").toUpperCase().trim();
+            return v === "1" || v === "SIM" || v === "X";
           });
-        } else {
-          const idxDia = cabecalho.findIndex(h => h.toUpperCase() === dia);
-          if (idxDia !== -1) {
-            filtrados = filtrados.filter(l => {
-              const v = (l[idxDia] || "").toUpperCase().trim();
-              return v === "1" || v === "SIM" || v === "X";
-            });
-          }
         }
       }
-
-      if (textoGeral) {
-        filtrados = filtrados.filter(linha =>
-          linha.some(cel => cel.toLowerCase().includes(textoGeral))
-        );
-      }
-
-      const idxOcultar = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
-      const corpo = document.getElementById("corpo");
-
-      corpo.innerHTML = filtrados
-        .map((linha, i) => {
-          const tds = linha
-            .map((c, j) => (j === idxOcultar ? null : `<td>${c}</td>`))
-            .filter(Boolean)
-            .join("");
-          
-          const input = `<td><input type="text" id="anotacao_${i}"></td>`;
-
-          // 🆕 Select de tipo de veículo
-          const tipos = ["Utilitário", "Van", "3/4", "Truck", "Carreta", "Rodotrem"];
-          const selectVeiculo = `
-            <td>
-              <select id="veiculo_${i}">
-                <option value=""></option>
-                ${tipos.map(v => `<option value="${v}">${v}</option>`).join("")}
-              </select>
-            </td>`;
-
-          return `<tr>${input}${selectVeiculo}${tds}</tr>`;
-        })
-        .join("");
-
-      // 🎨 Pinta as últimas 14 colunas: 7 cinza, 7 azul
-      const linhas = corpo.querySelectorAll("tr");
-      linhas.forEach(tr => {
-        const tds = tr.querySelectorAll("td");
-        const ultimas14 = Array.from(tds).slice(-14);
-        const primeiras7 = ultimas14.slice(0, 7);
-        const ultimas7 = ultimas14.slice(7);
-
-        primeiras7.forEach(td => {
-          if (td.textContent.trim() !== "") td.style.backgroundColor = "#d3d3d3";
-        });
-
-        ultimas7.forEach(td => {
-          if (td.textContent.trim() !== "") td.style.backgroundColor = "#add8e6";
-        });
-      });
     }
 
-    document.getElementById("filtroCliente").addEventListener("change", atualizarTabela);
-    document.getElementById("filtroDia").addEventListener("change", atualizarTabela);
-    document.getElementById("filtroGeral").addEventListener("input", atualizarTabela);
-  </script>
-</body>
-</html>
+    if (textoGeral) {
+      filtrados = filtrados.filter(linha =>
+        linha.some(cel => cel.toLowerCase().includes(textoGeral))
+      );
+    }
 
+    const idxOcultar = cabecalho.findIndex(h => h.toUpperCase().includes("DIA DA SEMANA"));
+    const corpo = document.getElementById("corpo");
+
+    corpo.innerHTML = filtrados
+      .map((linha, i) => {
+        const tds = linha
+          .map((c, j) => (j === idxOcultar ? null : `<td>${c}</td>`))
+          .filter(Boolean)
+          .join("");
+        
+        const input = `<td><input type="text" id="anotacao_${i}"></td>`;
+
+        const tipos = ["Utilitário", "Van", "3/4", "Truck", "Carreta", "Rodotrem"];
+        const selectVeiculo = `
+          <td>
+            <select id="veiculo_${i}">
+              <option value=""></option>
+              ${tipos.map(v => `<option value="${v}">${v}</option>`).join("")}
+            </select>
+          </td>`;
+
+        return `<tr>${input}${selectVeiculo}${tds}</tr>`;
+      })
+      .join("");
+
+    // 🎨 Pinta as últimas 14 colunas: 7 cinza, 7 azul
+    const linhas = corpo.querySelectorAll("tr");
+    linhas.forEach(tr => {
+      const tds = tr.querySelectorAll("td");
+      const ultimas14 = Array.from(tds).slice(-14);
+      const primeiras7 = ultimas14.slice(0, 7);
+      const ultimas7 = ultimas14.slice(7);
+
+      primeiras7.forEach(td => {
+        if (td.textContent.trim() !== "") td.style.backgroundColor = "#d3d3d3";
+      });
+
+      ultimas7.forEach(td => {
+        if (td.textContent.trim() !== "") td.style.backgroundColor = "#add8e6";
+      });
+    });
+
+    // 🆕 Adiciona evento de mudança no select de veículo
+    const selects = corpo.querySelectorAll("select[id^='veiculo_']");
+    selects.forEach(sel => {
+      sel.addEventListener("change", e => {
+        const tr = e.target.closest("tr");
+        const tds = tr.querySelectorAll("td");
+        const primeiras7 = Array.from(tds).slice(0, 7);
+
+        // Limpa cores anteriores
+        primeiras7.forEach(td => td.style.backgroundColor = "");
+
+        // Só pinta se houver veículo selecionado
+        if (e.target.value) {
+          primeiras7.forEach(td => td.style.backgroundColor = "#c0ffc0");
+        }
+      });
+    });
+  }
+
+  document.getElementById("filtroCliente").addEventListener("change", atualizarTabela);
+  document.getElementById("filtroDia").addEventListener("change", atualizarTabela);
+  document.getElementById("filtroGeral").addEventListener("input", atualizarTabela);
+</script>
