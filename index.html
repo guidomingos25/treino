@@ -9,8 +9,13 @@
       background: #f9fafb;
       margin: 20px;
     }
-    h1 { text-align: center; }
-    .filtros { margin-bottom: 15px; text-align: center; }
+    h1 {
+      text-align: center;
+    }
+    .filtros {
+      margin-bottom: 15px;
+      text-align: center;
+    }
     select, input[type="text"] {
       padding: 6px;
       font-size: 14px;
@@ -36,40 +41,45 @@
       cursor: pointer;
       user-select: none;
     }
-    tr:nth-child(even) { background-color: #f2f2f2; }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
     input[type="text"] {
       border: 1px solid #ccc;
       border-radius: 4px;
       box-sizing: border-box;
     }
-    td:first-child, th:first-child { width: 150px; }
-    #loading { text-align: center; font-size: 18px; }
+    td:first-child, th:first-child {
+      width: 150px;
+    }
+    #loading {
+      text-align: center;
+      font-size: 18px;
+    }
     #anotacoesGerais {
-      width: 100%; height: 120px; margin-top: 30px;
-      padding: 10px; font-size: 14px;
-      border: 1px solid #bbb; border-radius: 6px;
-      box-sizing: border-box; resize: vertical;
+      width: 100%;
+      height: 120px;
+      margin-top: 30px;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      box-sizing: border-box;
+      resize: vertical;
     }
     label.anotacoes-gerais-label {
-      display: block; font-weight: bold;
-      margin-top: 30px; margin-bottom: 5px;
+      display: block;
+      font-weight: bold;
+      margin-top: 30px;
+      margin-bottom: 5px;
       font-size: 15px;
     }
-    .ordenacao { margin-left: 6px; font-size: 10px; }
-    #filtroGeral { width: 250px; }
-    #btnPDF {
-      display: block;
-      margin: 20px auto;
-      background-color: #4CAF50;
-      color: white;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
+    .ordenacao {
+      margin-left: 6px;
+      font-size: 10px;
     }
-    #btnPDF:hover {
-      background-color: #45a049;
+    #filtroGeral {
+      width: 250px;
     }
   </style>
 </head>
@@ -104,13 +114,8 @@
     <tbody id="corpo"></tbody>
   </table>
 
-  <button id="btnPDF" onclick="gerarPDF()">Salvar PDF (veículos selecionados)</button>
-
   <label for="anotacoesGerais" class="anotacoes-gerais-label">Anotações Gerais</label>
   <textarea id="anotacoesGerais" placeholder="Digite aqui suas observações gerais..."></textarea>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
   <script>
     const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQkREcLQFJhAsxEq3WRVxHtYw46zSe3sDVJcQWOreQzFs6-u6PWF-cI8ndRTkQUFXfurUkkog0-NrZq/pub?output=csv";
@@ -282,7 +287,7 @@
         })
         .join("");
 
-      // 🎨 Pinta colunas
+      // 🎨 Pinta as últimas 14 colunas (7 cinza, 7 azul)
       const linhas = corpo.querySelectorAll("tr");
       linhas.forEach(tr => {
         const tds = tr.querySelectorAll("td");
@@ -299,7 +304,7 @@
         });
       });
 
-      // ✅ Correção: fecha o parêntese corretamente
+      // 🆕 Evento para pintar as 7 primeiras colunas ao selecionar veículo
       const selects = corpo.querySelectorAll("select[id^='veiculo_']");
       selects.forEach(sel => {
         sel.addEventListener("change", e => {
@@ -317,50 +322,6 @@
     document.getElementById("filtroCliente").addEventListener("change", atualizarTabela);
     document.getElementById("filtroDia").addEventListener("change", atualizarTabela);
     document.getElementById("filtroGeral").addEventListener("input", atualizarTabela);
-
-    function gerarPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      const linhas = document.querySelectorAll("#corpo tr");
-      const cabecalhos = Array.from(document.querySelectorAll("#cabecalho th")).map(th => th.textContent);
-      const dadosPDF = [];
-
-      linhas.forEach(tr => {
-        const select = tr.querySelector("select[id^='veiculo_']");
-        if (select && select.value) {
-          const row = Array.from(tr.querySelectorAll("td")).map(td => td.innerText.trim());
-          dadosPDF.push(row);
-        }
-      });
-
-      if (dadosPDF.length === 0) {
-        alert("Nenhuma linha possui veículo selecionado!");
-        return;
-      }
-
-      doc.setFontSize(14);
-      doc.text("Programação de Cargas - Linhas com Veículo Selecionado", 14, 15);
-
-      doc.autoTable({
-        head: [cabecalhos],
-        body: dadosPDF,
-        startY: 25,
-        styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: [76, 175, 80] }
-      });
-
-      const anotacoes = document.getElementById("anotacoesGerais").value.trim();
-      if (anotacoes) {
-        const y = doc.lastAutoTable.finalY + 10;
-        doc.setFontSize(12);
-        doc.text("Anotações Gerais:", 14, y);
-        doc.setFontSize(10);
-        doc.text(anotacoes, 14, y + 6);
-      }
-
-      doc.save("programacao_filtrada.pdf");
-    }
   </script>
 </body>
 </html>
