@@ -2,39 +2,45 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Expedição de Cargas</title>
+  <title>Consulta de Cargas (Simulação)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background-color: #f9fafb;
       margin: 20px;
-      background: #f4f6f8;
     }
     h1 {
       text-align: center;
-      color: #333;
     }
     table {
       border-collapse: collapse;
       width: 100%;
-      background: white;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      margin-top: 15px;
     }
     th, td {
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
       padding: 8px;
       text-align: left;
     }
     th {
-      background: #007bff;
-      color: white;
+      background-color: #f0f0f0;
     }
-    tr:nth-child(even) {
-      background: #f9f9f9;
+    tr:hover {
+      background-color: #f5f5f5;
+    }
+    .atualizacao {
+      text-align: right;
+      font-size: 14px;
+      color: #555;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>Expedição de Cargas (últimos 60 dias)</h1>
+  <h1>Expedição de Cargas</h1>
+
+  <div class="atualizacao" id="atualizacao"></div>
+
   <table id="tabela">
     <thead>
       <tr id="cabecalho"></tr>
@@ -43,34 +49,76 @@
   </table>
 
   <script>
-    async function carregarDados() {
-      try {
-        // Lê o arquivo JSON local
-        const resposta = await fetch("expedicao.json");
-        const dados = await resposta.json();
-
-        if (dados.length === 0) {
-          document.getElementById("corpo").innerHTML = "<tr><td colspan='10'>Sem dados disponíveis</td></tr>";
-          return;
-        }
-
-        // Cria cabeçalhos dinamicamente
-        const colunas = Object.keys(dados[0]);
-        const cabecalho = document.getElementById("cabecalho");
-        cabecalho.innerHTML = colunas.map(c => `<th>${c}</th>`).join("");
-
-        // Preenche as linhas
-        const corpo = document.getElementById("corpo");
-        corpo.innerHTML = dados.map(linha =>
-          `<tr>${colunas.map(c => `<td>${linha[c]}</td>`).join("")}</tr>`
-        ).join("");
-
-      } catch (erro) {
-        console.error("Erro ao carregar JSON:", erro);
+    // 🔹 Simulação dos dados que viriam da query SQL
+    const dadosSimulados = [
+      {
+        "FILIAL": "SP01",
+        "DATA DE SOLICITACAO": "10/10/2025 08:15:00",
+        "DESTINO": "Campinas",
+        "VEICULO": "Truck",
+        "PESO TOTAL": "12.340",
+        "ULTIMA_ATUALIZACAO": new Date().toLocaleString("pt-BR")
+      },
+      {
+        "FILIAL": "SP02",
+        "DATA DE SOLICITACAO": "15/10/2025 09:40:00",
+        "DESTINO": "Ribeirão Preto",
+        "VEICULO": "Carreta",
+        "PESO TOTAL": "25.780",
+        "ULTIMA_ATUALIZACAO": new Date().toLocaleString("pt-BR")
+      },
+      {
+        "FILIAL": "RJ01",
+        "DATA DE SOLICITACAO": "17/10/2025 07:55:00",
+        "DESTINO": "Volta Redonda",
+        "VEICULO": "Utilitário",
+        "PESO TOTAL": "3.400",
+        "ULTIMA_ATUALIZACAO": new Date().toLocaleString("pt-BR")
       }
+    ];
+
+    // 🔹 Função para montar a tabela
+    function montarTabela(dados) {
+      const cabecalho = document.getElementById("cabecalho");
+      const corpo = document.getElementById("corpo");
+      const atualizacao = document.getElementById("atualizacao");
+
+      // limpa tabela
+      cabecalho.innerHTML = "";
+      corpo.innerHTML = "";
+
+      if (dados.length === 0) {
+        corpo.innerHTML = "<tr><td colspan='100%'>Nenhum registro encontrado</td></tr>";
+        return;
+      }
+
+      // cria cabeçalho com base nas chaves do primeiro registro
+      Object.keys(dados[0]).forEach(campo => {
+        const th = document.createElement("th");
+        th.textContent = campo;
+        cabecalho.appendChild(th);
+      });
+
+      // cria linhas da tabela
+      dados.forEach(linha => {
+        const tr = document.createElement("tr");
+        Object.values(linha).forEach(valor => {
+          const td = document.createElement("td");
+          td.textContent = valor;
+          tr.appendChild(td);
+        });
+        corpo.appendChild(tr);
+      });
+
+      // atualiza data de atualização
+      atualizacao.textContent = `Última atualização: ${new Date().toLocaleString("pt-BR")}`;
     }
 
-    carregarDados();
+    // 🔹 Simula o carregamento do JSON (como se viesse de um servidor)
+    document.addEventListener("DOMContentLoaded", () => {
+      // simulando delay (como se estivesse buscando na API)
+      setTimeout(() => montarTabela(dadosSimulados), 500);
+    });
   </script>
 </body>
 </html>
