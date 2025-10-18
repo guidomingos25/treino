@@ -4,12 +4,33 @@
   <meta charset="UTF-8">
   <title>Expedição de Cargas</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f6f8; }
-    h1 { text-align: center; }
-    table { border-collapse: collapse; width: 100%; background: white; margin-top: 15px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background: #007bff; color: white; }
-    tr:nth-child(even) { background: #f9f9f9; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f4f6f8;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: white;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
   </style>
 </head>
 <body>
@@ -24,8 +45,8 @@
   <script>
     async function carregarDados() {
       try {
-        // Chamada à sua API (substitua pela URL real)
-        const resposta = await fetch("https://meuservidor.com/api/expedicao");
+        // Lê o arquivo JSON local
+        const resposta = await fetch("expedicao.json");
         const dados = await resposta.json();
 
         if (dados.length === 0) {
@@ -33,19 +54,19 @@
           return;
         }
 
-        // Gera cabeçalho
+        // Cria cabeçalhos dinamicamente
         const colunas = Object.keys(dados[0]);
         const cabecalho = document.getElementById("cabecalho");
         cabecalho.innerHTML = colunas.map(c => `<th>${c}</th>`).join("");
 
-        // Gera corpo
+        // Preenche as linhas
         const corpo = document.getElementById("corpo");
         corpo.innerHTML = dados.map(linha =>
           `<tr>${colunas.map(c => `<td>${linha[c]}</td>`).join("")}</tr>`
         ).join("");
 
       } catch (erro) {
-        console.error("Erro ao carregar dados:", erro);
+        console.error("Erro ao carregar JSON:", erro);
       }
     }
 
