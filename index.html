@@ -4,195 +4,79 @@
   <meta charset="UTF-8">
   <title>Programação</title>
   <style>
-    /* ====== BASE ====== */
-body {
-  font-family: "Inter", Arial, sans-serif;
-  background: #f2f4f7;
-  margin: 0;
-  padding: 25px;
-  color: #1e293b;
-}
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9fafb;
+      margin: 20px;
+    }
+    h1 { text-align: center; }
+    .filtros { margin-bottom: 15px; text-align: center; }
+    select, input[type="text"] { padding: 6px; font-size: 14px; margin: 0 5px; }
+    table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    th, td { border: 1px solid #ddd; padding: 5px; text-align: center; font-size: 13px; }
+    th {
+      background-color: #4CAF50;
+      color: white;
+      position: sticky;
+      top: 0;
+      cursor: pointer;
+      user-select: none;
+    }
+    tr:nth-child(even) { background-color: #f2f2f2; }
+    input[type="text"] { border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    td:first-child, th:first-child { width: 150px; }
+    #loading { text-align: center; font-size: 18px; }
+    #anotacoesGerais { width: 100%; height: 120px; margin-top: 30px; padding: 10px; font-size: 14px; border: 1px solid #bbb; border-radius: 6px; box-sizing: border-box; resize: vertical; }
+    label.anotacoes-gerais-label { display: block; font-weight: bold; margin-top: 30px; margin-bottom: 5px; font-size: 15px; }
+    .ordenacao { margin-left: 6px; font-size: 10px; }
+    #filtroGeral { width: 250px; }
 
-h1 {
-  text-align: center;
-  margin-bottom: 25px;
-  font-size: 28px;
-  font-weight: 700;
-  color: #0f172a;
-}
+    /* Estilos do botão + e do formulário de inserção */
+    #addRowContainer { margin-top: 12px; text-align: left; }
+    #addButton {
+      font-size: 20px;
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      border: 1px solid #4CAF50;
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    #newRowForm {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+      max-width: 100%;
+    }
+    #newRowForm label { display: block; font-size: 13px; margin-top: 6px; }
+    #newRowForm select, #newRowForm input[type="text"] { width: 100%; max-width: 480px; padding: 6px; margin-top:4px; }
+    #insertBtn {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      background: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+    #cancelInsert {
+      margin-left: 8px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: white;
+      cursor: pointer;
+    }
 
-/* ====== CONTAINER CENTRAL ====== */
-.filtros {
-  background: white;
-  padding: 18px;
-  border-radius: 14px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-  margin-bottom: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-}
-
-.filtros label {
-  font-weight: 600;
-  margin-right: 4px;
-}
-
-select, input[type="text"] {
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  font-size: 14px;
-  background: #fff;
-  transition: 0.2s;
-}
-
-select:hover, input[type="text"]:hover {
-  border-color: #94a3b8;
-}
-
-select:focus, input[type="text"]:focus {
-  border-color: #3b82f6;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(59,130,246,.2);
-}
-
-#filtroGeral { width: 260px; }
-
-/* ====== TABELA ====== */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  overflow: hidden;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-}
-
-th {
-  background: #3b82f6;
-  color: white;
-  padding: 10px;
-  font-size: 13px;
-  letter-spacing: 0.3px;
-  cursor: pointer;
-  user-select: none;
-  position: sticky;
-  top: 0;
-}
-
-td {
-  padding: 8px;
-  border-bottom: 1px solid #e2e8f0;
-  font-size: 13px;
-}
-
-tr:hover {
-  background: #f1f5f9 !important;
-  transition: 0.2s;
-}
-
-tr:nth-child(even) {
-  background: #f8fafc;
-}
-
-/* ====== BOTÃO + ====== */
-#addButton {
-  font-size: 24px;
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  border: none;
-  background: #3b82f6;
-  color: white;
-  cursor: pointer;
-  margin-top: 15px;
-  transition: 0.25s;
-  box-shadow: 0 3px 10px rgba(59,130,246,0.3);
-}
-
-#addButton:hover {
-  transform: scale(1.1);
-  background: #2563eb;
-}
-
-/* ====== FORMULÁRIO (accordion estilizado) ====== */
-#newRowForm {
-  margin-top: 12px;
-  padding: 15px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-  border-left: 4px solid #3b82f6;
-  display: none;
-  animation: fadeIn 0.3s ease;
-}
-
-#newRowForm label {
-  font-weight: 600;
-}
-
-#insertBtn {
-  padding: 10px 16px;
-  border-radius: 8px;
-  background: #10b981;
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-#insertBtn:hover {
-  background: #059669;
-}
-
-#cancelInsert {
-  padding: 10px 16px;
-  border-radius: 8px;
-  background: #e2e8f0;
-  border: none;
-  cursor: pointer;
-  margin-left: 6px;
-}
-
-#cancelInsert:hover {
-  background: #cbd5e1;
-}
-
-/* ====== ANOTAÇÕES ====== */
-#anotacoesGerais {
-  width: 100%;
-  height: 130px;
-  padding: 12px;
-  font-size: 14px;
-  border-radius: 12px;
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
-  margin-top: 12px;
-}
-
-.anotacoes-gerais-label {
-  font-size: 16px;
-  font-weight: 700;
-  margin-top: 35px;
-}
-
-/* ====== LOADING ====== */
-#loading {
-  text-align: center;
-  font-size: 18px;
-  font-weight: 600;
-  color: #475569;
-}
-
-/* Fade animation */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
+    @media (min-width: 900px) {
+      #newRowForm .row { display:flex; gap:12px; align-items: flex-end; }
+      #newRowForm .row > div { flex: 1; }
+    }
   </style>
 </head>
 <body>
@@ -2571,6 +2455,7 @@ tr:nth-child(even) {
   </script>
 </body>
 </html>
+
 
 
 
