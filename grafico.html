@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>SLA Geral</title>
+
+<style>
+:root {
+    --orange-1: #fb923c;
+    --orange-2: #f97316;
+    --orange-3: #fdba74;
+    --orange-bg: rgba(249,115,22,.12);
+    --dark-1: #020617;
+    --dark-2: #0f172a;
+    --dark-3: #1e293b;
+    margin-top: 40px;
+}
+
+body {
+    background: var(--dark-2);
+    font-family: "Segoe UI", Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 90vh;
+    color: #e5e7eb;
+    margin: 0;
+}
+
+/* 🔶 LOGO FIXO NO TOPO ESQUERDO */
+.logo-container {
+    position: fixed;
+    top: 20px;
+    left: 24px;
+    z-index: 10;
+}
+
+.logo-container img {
+    height: 46px;
+    max-width: 160px;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,.6));
+}
+
+.card {
+    background: var(--dark-1);
+    padding: 18px 55px 25px;
+    border-radius: 22px;
+    width: 620px;
+    text-align: center;
+    border: 1px solid rgba(249,115,22,.25);
+    box-shadow:
+        0 30px 60px rgba(0,0,0,.75),
+        0 0 40px rgba(249,115,22,.18);
+}
+
+svg {
+    width: 100%;
+    margin-top: -55px;
+}
+
+.value-text {
+    font-size: 26px;
+    font-weight: bold;
+    fill: #f8fafc;
+}
+
+.label {
+    margin-top: 6px;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--orange-3);
+}
+
+.date {
+    margin-top: 6px;
+    font-size: 15px;
+    color: #94a3b8;
+}
+
+.status {
+    margin-top: 14px;
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 700;
+    background: var(--orange-bg);
+    color: var(--orange-1);
+}
+
+#pointer {
+    transition: transform .7s ease-in-out;
+}
+</style>
+</head>
+<body>
+
+<!-- 🔶 LOGO -->
+<div class="logo-container">
+    <img src="logo.png" alt="Logo da Empresa">
+</div>
+
+<div class="card">
+
+<svg viewBox="0 0 200 170">
+
+<path d="M20 115 A80 80 0 0 1 180 115"
+      pathLength="100"
+      fill="none"
+      stroke="#1e293b"
+      stroke-width="30"
+      stroke-linecap="butt"/>
+
+<path d="M20 115 A80 80 0 0 1 180 115"
+      pathLength="100"
+      fill="none"
+      stroke="#04f428"
+      stroke-width="35"
+      stroke-dasharray="1 99"
+      stroke-dashoffset="5.5"
+      opacity="0.5"/>
+
+<path d="M20 115 A80 80 0 0 1 180 115"
+      pathLength="100"
+      fill="none"
+      stroke="url(#grad)"
+      stroke-width="25"
+      stroke-linecap="butt"
+      stroke-dasharray="100"
+      stroke-dashoffset="100"
+      id="progress"/>
+
+<g id="pointer" transform="rotate(-90 100 115)">
+    <line x1="100" y1="115" x2="100" y2="24"
+          stroke="#f8fafc"
+          stroke-width="4"
+          stroke-linecap="round"/>
+    <circle cx="100" cy="115" r="6" fill="#f8fafc"/>
+</g>
+
+<defs>
+<linearGradient id="grad">
+    <stop offset="0%" stop-color="#ef4444"/>
+    <stop offset="50%" stop-color="#facc15"/>
+    <stop offset="100%" stop-color="#22c55e"/>
+</linearGradient>
+</defs>
+
+<text x="100" y="155" text-anchor="middle"
+      class="value-text" id="valueText">0%</text>
+
+</svg>
+
+<div class="label">SLA GERAL ARMAZÉM SÃO PAULO</div>
+<div class="date" id="dateText">Atualizado em: --/--/----</div>
+<div class="status" id="statusText">META SLA: 95%</div>
+
+</div>
+
+<script>
+const progress = document.getElementById("progress");
+const valueText = document.getElementById("valueText");
+const dateText = document.getElementById("dateText");
+const statusText = document.getElementById("statusText");
+const pointer = document.getElementById("pointer");
+
+const SLA_META = 95;
+
+// 🔗 URL DA SUA API GOOGLE SHEETS
+const SHEETS_API_URL =
+  "https://sheets.googleapis.com/v4/spreadsheets/16311h8uVMfEs4hGnwKfPAJKbMREOXCl6ENuOKgKQa5s/values/Página1!A1?key=AIzaSyAbiftztBdkS5ogMgDr_aRq7fzFzCHTzHQ";
+
+function setGauge(value) {
+    value = Math.max(0, Math.min(100, Number(value)));
+
+    progress.style.strokeDashoffset = 100 - value;
+    valueText.textContent = value + "%";
+
+    const angle = (value / 100) * 180 - 90;
+    pointer.setAttribute("transform", `rotate(${angle} 100 115)`);
+
+    if (value >= SLA_META) {
+        statusText.textContent = "SLA DENTRO DA META";
+        statusText.style.background = "rgba(34,197,94,.15)";
+        statusText.style.color = "#22c55e";
+    } else {
+        statusText.textContent = "ABAIXO DA META SLA";
+        statusText.style.background = "rgba(249,115,22,.15)";
+        statusText.style.color = "#fb923c";
+    }
+
+    dateText.textContent =
+      "Atualizado em: " + new Date().toLocaleDateString("pt-BR");
+}
+
+// 🔄 BUSCA O VALOR DA PLANILHA
+async function loadSLAFromSheets() {
+    try {
+        const response = await fetch(SHEETS_API_URL);
+        const data = await response.json();
+
+        const value = data.values?.[0]?.[0];
+
+        if (value !== undefined) {
+            setGauge(value);
+        } else {
+            console.warn("Célula A1 vazia ou inválida");
+        }
+
+    } catch (error) {
+        console.error("Erro ao buscar dados do Google Sheets:", error);
+    }
+}
+
+// 🚀 CARREGA AO ABRIR A PÁGINA
+loadSLAFromSheets();
+
+// ⏱️ (OPCIONAL) ATUALIZA AUTOMATICAMENTE A CADA 60s
+setInterval(loadSLAFromSheets, 60000);
+</script>
+
+
+</body>
+</html>
